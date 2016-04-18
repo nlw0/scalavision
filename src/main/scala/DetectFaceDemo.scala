@@ -4,8 +4,8 @@ import org.opencv.imgproc.Imgproc
 import org.opencv.objdetect.CascadeClassifier
 
 object DetectFaceDemo extends App {
-  var libopencv_java = "/home/n.werneck/share/OpenCV/java/libopencv_java310.so";
-  System.load(libopencv_java);
+  var libopencv_java = System.getProperty("opencvlib")
+  System.load(libopencv_java)
 
   println(Core.NATIVE_LIBRARY_NAME)
 
