@@ -48,9 +48,9 @@ object XCornerExtraction extends App {
   val im_denom = new Mat()
   Core.subtract(dxx.mul(dyy), dxy.mul(dxy), im_denom)
 
+  val im_denom_min = new Mat()
+  Imgproc.erode(im_denom, im_denom_min, Mat.ones(3,3, CvType.CV_8U))
 
-  //  im_denom_min = cv2.erode(im_denom, kk)
-  //
   //    im_classify = (im_denom < -100) * ((imx ** 2 + imy ** 2) < -2 * im_denom)
   //    im_loci = im_classify * cv2.compare(im_denom, im_denom_min, cv2.CMP_LE)
   //
