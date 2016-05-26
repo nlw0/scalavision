@@ -5,20 +5,21 @@ import org.opencv.imgcodecs.Imgcodecs
 object TestKeypointExtractor extends App with UtilityFunctions {
   System.loadLibrary(Core.NATIVE_LIBRARY_NAME)
 
-  val kpext = new KeypointExtractor(FeatureDetector.ORB, DescriptorExtractor.ORB)
+  val kpext = new KeypointExtractor(FeatureDetector.SIFT, DescriptorExtractor.SIFT)
 
-  val imageFilename = getClass.getResource("/villa.jpg").getPath
-  //  val imageFilename = getClass.getResource("/buska.jpg").getPath
-  // val imageFilename = getClass.getResource("/left05.jpg").getPath
-  val inputImage = Imgcodecs.imread(imageFilename, Imgcodecs.IMREAD_GRAYSCALE)
-  val ima = inputImage.colRange(0, inputImage.cols() / 2 - 1)
-  val imb = inputImage.colRange(inputImage.cols() / 2, inputImage.cols() - 1)
+  def openImage(fileName: String): Mat = {
+    val imageFilename = System.getProperty(fileName)
+    Imgcodecs.imread(imageFilename, Imgcodecs.IMREAD_GRAYSCALE)
+  }
+
+  val ima = openImage("imageA")
+  val imb = openImage("imageB")
 
   // Detect KeyPoints and extract descriptors.
   val (kpa, dca) = kpext.detectAndExtract(ima)
   val (kpb, dcb) = kpext.detectAndExtract(imb)
 
-  val matcher = DescriptorMatcher.create(DescriptorMatcher.BRUTEFORCE_HAMMINGLUT)
+  val matcher = DescriptorMatcher.create(DescriptorMatcher.FLANNBASED)
 
   val descriptorMatches = new MatOfDMatch
   matcher.`match`(dca, dcb, descriptorMatches)
