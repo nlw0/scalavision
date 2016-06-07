@@ -5,7 +5,7 @@ import org.opencv.imgcodecs.Imgcodecs
 object TestKeypointExtractor extends App with UtilityFunctions {
   System.loadLibrary(Core.NATIVE_LIBRARY_NAME)
 
-  val kpext = new KeypointExtractor(FeatureDetector.SIFT, DescriptorExtractor.SIFT)
+  val kpext = new KeypointExtractor(FeatureDetector.ORB, DescriptorExtractor.ORB)
 
   def openImage(fileName: String): Mat = {
     val imageFilename = System.getProperty(fileName)
@@ -19,15 +19,14 @@ object TestKeypointExtractor extends App with UtilityFunctions {
   val (kpa, dca) = kpext.detectAndExtract(ima)
   val (kpb, dcb) = kpext.detectAndExtract(imb)
 
-  val matcher = DescriptorMatcher.create(DescriptorMatcher.FLANNBASED)
+  val matcher = DescriptorMatcher.create(DescriptorMatcher.BRUTEFORCE_HAMMING)
 
   val descriptorMatches = new MatOfDMatch
   matcher.`match`(dca, dcb, descriptorMatches)
 
   // Visualize the matches and save the visualization.
-  val correspondenceImage = new Mat
+  val correspondenceImage = new Mat()
   Features2d.drawMatches(ima, kpa, imb, kpb, descriptorMatches, correspondenceImage)
 
   Imgcodecs.imwrite("orb.png", correspondenceImage)
-
 }

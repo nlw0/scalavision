@@ -11,7 +11,7 @@ class KeypointExtractor(detectorType: Int = FeatureDetector.ORB, descriptorType:
   def detectAndExtract(image: Mat) = {
     val keypoints: MatOfKeyPoint = extractKeypointsFromImage(image)
 
-    val bestKeypoints: MatOfKeyPoint = selectKeypoints(keypoints, 20)
+    val bestKeypoints: MatOfKeyPoint = selectKeypoints(keypoints, 200)
 
     val descriptors = new Mat
     extractor.compute(image, bestKeypoints, descriptors)
