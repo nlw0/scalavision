@@ -1,3 +1,6 @@
+import java.io.BufferedInputStream
+import java.net.URL
+
 import akka.actor.ActorSystem
 import akka.stream.scaladsl._
 import akka.util.ByteString
@@ -38,16 +41,12 @@ object RandServer {
         }
       } ~ path("test") {
         get {
-          val imageFilename = "/home/nlw/buska.jpg"
-          val img = Imgcodecs.imread(imageFilename)
-          val xx = Array[Byte](0.toByte, 0.toByte, 255.toByte)
-          img.put(10, 10, xx)
-          img.put(10, 11, xx)
-          img.put(11, 10, xx)
-          img.put(11, 11, xx)
-          var yowza = new MatOfByte
+          //          val imageFilename = "/home/n.werneck/buska.jpg"
+          val imageA = "/home/n.werneck/DATA/TUM/rgbd_dataset_freiburg2_desk/rgb/1311868262.621668.png"
+          val imageB = "/home/n.werneck/DATA/TUM/rgbd_dataset_freiburg2_desk/rgb/1311868263.053350.png"
 
-
+          val img = TestKeypointExtractor.findAndDrawCorrespondences(imageA, imageB)
+          val yowza = new MatOfByte
 
           Imgcodecs.imencode(".jpg", img, yowza)
 
