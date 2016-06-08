@@ -25,7 +25,7 @@ object TestKeypointExtractor extends App with UtilityFunctions {
   matcher.`match`(dca, dcb, descriptorMatches)
 
   // Visualize the matches and save the visualization.
-  val correspondenceImage = new Mat
+  val correspondenceImage = new Mat()
   Features2d.drawMatches(ima, kpa, imb, kpb, descriptorMatches, correspondenceImage)
 
   Imgcodecs.imwrite("orb.png", correspondenceImage)

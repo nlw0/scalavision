@@ -1,48 +1,59 @@
-/*import akka.actor.ActorSystem
-import akka.actor.Props
-import scala.concurrent.duration._
-import akka.util.Timeout
-import akka.pattern.ask
-import akka.stream.ActorMaterializer
+import akka.actor.ActorSystem
+import akka.stream.scaladsl._
+import akka.util.ByteString
 import akka.http.scaladsl.Http
+import akka.http.scaladsl.model.{ContentTypes, HttpEntity, MediaTypes}
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
-import spray.json.DefaultJsonProtocol._
+import akka.stream.ActorMaterializer
+import org.opencv.core.{Core, MatOfByte}
+import org.opencv.imgcodecs.Imgcodecs
+
+import scala.util.Random
 import scala.io.StdIn
 
-object WebServer {
-
-  case class Bid(userId: String, bid: Int)
-  case object GetBids
-  case class Bids(bids: List[Bid])
-
-  // these are from spray-json
-  implicit val bidFormat = jsonFormat2(Bid)
-  implicit val bidsFormat = jsonFormat1(Bids)
+object RandServer {
 
   def main(args: Array[String]) {
+    System.loadLibrary(Core.NATIVE_LIBRARY_NAME)
     implicit val system = ActorSystem()
     implicit val materializer = ActorMaterializer()
     // needed for the future flatMap/onComplete in the end
     implicit val executionContext = system.dispatcher
 
-    val auction = system.actorOf(Auction.props, "auction")
+    // streams are re-usable so we can define it here
+    // and use it for every request
+    val numbers = Source.fromIterator(() =>
+      Iterator.continually(Random.nextInt()))
 
     val route =
-      path("auction") {
-        put {
-          parameter("bid".as[Int], "user") { (bid, user) =>
-            // place a bid, fire-and-forget
-            auction ! Bid(user, bid)
-            complete((StatusCodes.Accepted, "bid placed"))
-          }
-        }
+      path("random") {
         get {
-          implicit val timeout: Timeout = 5.seconds
+          complete(
+            HttpEntity(
+              ContentTypes.`text/plain(UTF-8)`,
+              // transform each number to a chunk of bytes
+              numbers.map(n => ByteString(s"$n\n"))
+            )
+          )
+        }
+      } ~ path("test") {
+        get {
+          val imageFilename = "/home/nlw/buska.jpg"
+          val img = Imgcodecs.imread(imageFilename)
+          val xx = Array[Byte](0.toByte, 0.toByte, 255.toByte)
+          img.put(10, 10, xx)
+          img.put(10, 11, xx)
+          img.put(11, 10, xx)
+          img.put(11, 11, xx)
+          var yowza = new MatOfByte
 
-          // query the actor for the current auction state
-          val bids: Future[Bids] = (auction ? GetBids).mapTo[Bids]
-          complete(bids)
+
+
+          Imgcodecs.imencode(".jpg", img, yowza)
+
+          complete(
+            HttpEntity(MediaTypes.`image/jpeg`, yowza.toArray)
+          )
         }
       }
 
@@ -52,6 +63,5 @@ object WebServer {
     bindingFuture
       .flatMap(_.unbind()) // trigger unbinding from the port
       .onComplete(_ ⇒ system.terminate()) // and shutdown when done
-
   }
-}*/
+}
