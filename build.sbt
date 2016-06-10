@@ -12,7 +12,8 @@ libraryDependencies ++= List(
   "com.typesafe.akka" %% "akka-actor" % "2.4.7",
   "com.typesafe.akka" %% "akka-http-core" % "2.4.7",
   "com.typesafe.akka" %% "akka-http-experimental" % "2.4.7",
-  "com.typesafe.akka" %% "akka-http-spray-json-experimental" % "2.4.7"
+  "com.typesafe.akka" %% "akka-http-spray-json-experimental" % "2.4.7",
+  "org.scalafx" %% "scalafx" % "8.0.92-R10"
 )
 
-javaOptions in run += "-Djava.library.path=/home/n.werneck/share/OpenCV/java"
+javaOptions in run += "-Djava.library.path=/usr/local/share/OpenCV/java"
