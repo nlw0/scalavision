@@ -2,7 +2,8 @@ import org.opencv.core.{Core, Mat, MatOfDMatch}
 import org.opencv.features2d.{DescriptorExtractor, DescriptorMatcher, FeatureDetector, Features2d}
 import org.opencv.imgcodecs.Imgcodecs
 
-object TestKeypointExtractor { //extends App with UtilityFunctions {
+object TestKeypointExtractor {
+  //extends App with UtilityFunctions {
   System.loadLibrary(Core.NATIVE_LIBRARY_NAME)
 
   val kpext = new KeypointExtractor(FeatureDetector.ORB, DescriptorExtractor.ORB)
@@ -11,10 +12,7 @@ object TestKeypointExtractor { //extends App with UtilityFunctions {
     Imgcodecs.imread(fileName, Imgcodecs.IMREAD_GRAYSCALE)
   }
 
-  def findAndDrawCorrespondences(imageA: String, imageB: String) = {
-    val ima = openImage(imageA)
-    val imb = openImage(imageB)
-
+  def findAndDrawCorrespondences(ima: Mat, imb: Mat): Mat = {
     // Detect KeyPoints and extract descriptors.
     val (kpa, dca) = kpext.detectAndExtract(ima)
     val (kpb, dcb) = kpext.detectAndExtract(imb)
@@ -32,8 +30,8 @@ object TestKeypointExtractor { //extends App with UtilityFunctions {
 
   //  val imageAFilename = System.getProperty("imageA")
   //  val imageBFilename = System.getProperty("imageB")
-  val imageA = "/home/n.werneck/DATA/TUM/rgbd_dataset_freiburg2_desk/rgb/1311868262.621668.png"
-  val imageB = "/home/n.werneck/DATA/TUM/rgbd_dataset_freiburg2_desk/rgb/1311868263.053350.png"
-  val correspondenceImage = findAndDrawCorrespondences(imageA, imageB)
-  Imgcodecs.imwrite("orb.png", correspondenceImage)
+  //  val imageA = "/home/n.werneck/DATA/TUM/rgbd_dataset_freiburg2_desk/rgb/1311868262.621668.png"
+  //  val imageB = "/home/n.werneck/DATA/TUM/rgbd_dataset_freiburg2_desk/rgb/1311868263.053350.png"
+  //  val correspondenceImage = findAndDrawCorrespondences(imageA, imageB)
+  //  Imgcodecs.imwrite("orb.png", correspondenceImage)
 }

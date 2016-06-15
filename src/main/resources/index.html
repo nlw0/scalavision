@@ -1,0 +1,77 @@
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta content="stuff, to, help, search, engines, not" name="keywords">
+  <meta content="What this page is about." name="description">
+  <meta content="Display Webcam Stream" name="title">
+  <title>Display Webcam Stream</title>
+
+  <style>
+#container {
+    margin: 0px auto;
+    width: 640px;
+    height: 480px;
+    border: 10px #333 solid;
+}
+#videoElement {
+    width: 640px;
+    height: 480px;
+    background-color: #666;
+}
+
+
+  </style>
+</head>
+
+<body>
+<div>
+  <a onClick="snapshot()">snap!</a>
+</div>
+<br/>
+<div id="container">
+  <div>
+    <video autoplay="true" id="videoElement"></video>
+  </div>
+</div>
+<div>
+  <img width=320 height=240 src="" id="saida">
+</div>
+  <canvas style="display:none;"></canvas>
+
+<script>
+var video = document.querySelector('video');
+
+var canvas = document.querySelector('canvas');
+var ctx = canvas.getContext('2d');
+var localMediaStream = null;
+
+ <!--video.addEventListener('click', snapshot, false);-->
+
+navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia || navigator.oGetUserMedia;
+
+if (navigator.getUserMedia) {
+    navigator.getUserMedia({video: true}, handleVideo, videoError);
+}
+
+function handleVideo(stream) {
+    video.src = window.URL.createObjectURL(stream);
+    localMediaStream = stream
+}
+
+function videoError(e) {
+    console.log('foi malz');
+}
+
+function snapshot() {
+  if (localMediaStream) {
+
+    canvas.width = video.clientWidth;
+    canvas.height = video.clientHeight;
+
+    ctx.drawImage(video, 0, 0);
+    document.querySelector('#saida').src = canvas.toDataURL('image/webp');
+  }
+}
+</script>
+</body>
+</html>
