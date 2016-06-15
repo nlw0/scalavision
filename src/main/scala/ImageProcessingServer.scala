@@ -80,7 +80,7 @@ trait ImageProcessingServer {
             }
             )
 
-          onSuccess(aa) {
+          onSuccess(bb) {
             ww => complete(HttpEntity(MediaTypes.`image/jpeg`, ww))
           }
 
