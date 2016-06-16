@@ -33,7 +33,17 @@ trait ImageProcessingServer {
     Iterator.continually(Random.nextInt()))
 
   val route =
-    path("random") {
+    path("camera") {
+      get {
+        val stream = getClass.getResourceAsStream("/index.html")
+        val lines = scala.io.Source.fromInputStream(stream).mkString
+        complete(
+          HttpEntity(
+            ContentTypes.`text/html(UTF-8)`, lines
+          )
+        )
+      }
+    } ~ path("random") {
       get {
         complete(
           HttpEntity(
