@@ -17,7 +17,6 @@ object OpenCameraTest extends JFXApp {
 
   val capture = new VideoCapture(0)
 
-
   val w: Int = capture.get(Videoio.CAP_PROP_FRAME_WIDTH).toInt
   val h: Int = capture.get(Videoio.CAP_PROP_FRAME_HEIGHT).toInt
 
