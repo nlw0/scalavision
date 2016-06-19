@@ -14,7 +14,7 @@ import scalafx.scene.{Group, Scene}
 object ObjectTracker extends JFXApp {
   System.loadLibrary(Core.NATIVE_LIBRARY_NAME)
 
-  val matOrig = Imgcodecs.imread(getClass.getResource("/mahakala.jpg").getPath)
+  val matOrig = Imgcodecs.imread(getClass.getResource("/grolsch.jpg").getPath)
 
   var w = matOrig.cols()
   var h = matOrig.rows()
@@ -34,8 +34,8 @@ object ObjectTracker extends JFXApp {
 
         Imgproc.cvtColor(matOrig, matrgb, Imgproc.COLOR_BGR2RGB)
 
-        val x = 100 + 10 * Math.sin(10*2*Math.PI*t*1e-9)
-        val y = 100 + 10 * Math.cos(10*2*Math.PI*t*1e-9)
+        val x = 100 + 10 * Math.sin(10 * 2 * Math.PI * t * 1e-9)
+        val y = 100 + 10 * Math.cos(10 * 2 * Math.PI * t * 1e-9)
         Imgproc.circle(matrgb, new Point(x, y), 3, new Scalar(255, 0, 0), -1)
         val was = new Array[Byte](matOrig.total().toInt * matOrig.channels())
         matrgb.get(0, 0, was)
@@ -47,6 +47,6 @@ object ObjectTracker extends JFXApp {
   }
 
   val pw = wi.pixelWriter
-  val was = Array.fill[Byte](640 * 480 * 3)(0.toByte)
+  val was = Array.fill[Byte](w * h * 3)(0.toByte)
   pw.setPixels(0, 0, w, h, PixelFormat.getByteRgbInstance, was, 0, w)
 }
