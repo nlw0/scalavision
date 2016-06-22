@@ -20,7 +20,7 @@ class ViewActor extends Actor {
   var viewRefreshRate = new FrequencyMeter()
 
   var nextUpdate = 2000000L
-
+  val minPeriod = 1000000L
 
   def spinnerActor = context.actorSelection("/user/spinnerActor")
 
@@ -28,8 +28,8 @@ class ViewActor extends Actor {
     case ViewActorUpdate =>
       val guiPeriod = GUI.fps.period
 
-      nextUpdate -= (viewRefreshRate.period - guiPeriod * 10) / 100
-      nextUpdate = if (nextUpdate < 10000L) 10000L else nextUpdate
+      nextUpdate -= (viewRefreshRate.period - guiPeriod * 4) / 1
+      nextUpdate = if (nextUpdate < minPeriod) minPeriod else nextUpdate
 
       implicit val ec = scala.concurrent.ExecutionContext.global
       context.system.scheduler.scheduleOnce(nextUpdate nanoseconds, self, ViewActorUpdate)
