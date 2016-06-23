@@ -14,19 +14,10 @@ object TestKeypointExtractor {
   }
 
   def concatenateImages(matA: Mat, matB: Mat) = {
-    val m = new Mat(matA.rows(), matA.cols() + matB.cols(), matA.`type`(), new Scalar(100,100,10))
-    // val m = new Mat(matA.rows(), matA.cols() + matB.cols(), CvType.CV_8UC3)
-    val rows = matA.rows()
+    val m = new Mat(matA.rows(), matA.cols() + matB.cols(), matA.`type`())
     val cols = matA.cols()
-
-        val roia = m.colRange(0, cols)
-        val roib = m.colRange(cols, cols * 2)
-
-//    val roia = m.submat(0, rows, 0, cols)
-//    val roib = m.submat(0, rows, cols, cols * 2)
-
-    matA.copyTo(roia)
-    matB.copyTo(roib)
+    matA.copyTo(m.colRange(0, cols))
+    matB.copyTo(m.colRange(cols, cols * 2))
     m
   }
 
