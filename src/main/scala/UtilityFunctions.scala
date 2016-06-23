@@ -32,4 +32,12 @@ trait UtilityFunctions {
     Imgcodecs.imwrite(outFilename, outputInt)
   }
 
+  def scaleImageHeight(rows: Int = 400)(img: Mat) = {
+    val out = new Mat(rows, img.cols() * rows / img.rows(), img.`type`())
+    Imgproc.resize(img, out, out.size(), 0, 0, Imgproc.INTER_AREA)
+    out
+  }
+
 }
+
+object UtilityFunctions extends UtilityFunctions
