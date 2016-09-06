@@ -3,6 +3,8 @@ import org.opencv.features2d.{DescriptorExtractor, DescriptorMatcher, FeatureDet
 import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
 
+case class MatchingKeypoints(kpa: MatOfKeyPoint, kpb: MatOfKeyPoint, descriptorMatches: MatOfDMatch)
+
 object TestKeypointExtractor {
   //extends App with UtilityFunctions {
   System.loadLibrary(Core.NATIVE_LIBRARY_NAME)
@@ -21,7 +23,7 @@ object TestKeypointExtractor {
     m
   }
 
-  def findKeypointMatches(ima: Mat, imb: Mat): (MatOfKeyPoint, MatOfKeyPoint, MatOfDMatch) = {
+  def findKeypointMatches(ima: Mat, imb: Mat): MatchingKeypoints = {
     val (kpa, dca) = kpext.detectAndExtract(ima)
     val (kpb, dcb) = kpext.detectAndExtract(imb)
 
@@ -29,53 +31,40 @@ object TestKeypointExtractor {
 
     val descriptorMatches = new MatOfDMatch
     matcher.`match`(dca, dcb, descriptorMatches)
-    (kpa, kpb, descriptorMatches)
+    MatchingKeypoints(kpa, kpb, descriptorMatches)
   }
 
-  def findAndDrawTracks(ima: Mat, imb: Mat): Mat = {
-    val (kpa: MatOfKeyPoint, kpb: MatOfKeyPoint, descriptorMatches: MatOfDMatch) = findKeypointMatches(ima, imb)
+  def drawTracks(ima: Mat, imb: Mat, mkp: MatchingKeypoints): Mat = {
+    val imgATrack = new Mat()
+    ima.copyTo(imgATrack)
+    val imgBTrack = new Mat()
+    imb.copyTo(imgBTrack)
 
-    // Visualize the matches and save the visualization.
-    val correspondenceImage = new Mat()
-
-    val imgatrack = new Mat()
-    ima.copyTo(imgatrack)
-    val imgbtrack = new Mat()
-    imb.copyTo(imgbtrack)
-    //    for (kp <- kpa.toArray) {
-    //      Imgproc.circle(imgatrack, kp.pt, 4, new Scalar(1.0,1.0,0.5))
-    //    }
-    //    for (kp <- kpb.toArray) {
-    //      Imgproc.circle(imgatrack, kp.pt, 4, new Scalar(0.5,1.0,1.0))
-    //    }
-    for (aa <- descriptorMatches.toArray) {
-      val pa = kpa.toArray.apply(aa.queryIdx).pt
-      val pb = kpb.toArray.apply(aa.trainIdx).pt
-      Imgproc.line(imgatrack, pa, pb, new Scalar(255, 255, 5, 60))
-      Imgproc.line(imgbtrack, pa, pb, new Scalar(255, 255, 5, 60))
-      Imgproc.circle(imgatrack, pb, 4, new Scalar(125, 125, 5, 60))
-      Imgproc.circle(imgbtrack, pa, 4, new Scalar(125, 125, 5, 60))
-      Imgproc.circle(imgatrack, pa, 4, new Scalar(0, 0, 255))
-      Imgproc.circle(imgbtrack, pb, 4, new Scalar(0, 0, 255))
+    for (aa <- mkp.descriptorMatches.toArray) {
+      val pa = mkp.kpa.toArray.apply(aa.queryIdx).pt
+      val pb = mkp.kpb.toArray.apply(aa.trainIdx).pt
+      Imgproc.line(imgATrack, pa, pb, new Scalar(255, 255, 5, 60))
+      Imgproc.line(imgBTrack, pa, pb, new Scalar(255, 255, 5, 60))
+      Imgproc.circle(imgATrack, pb, 4, new Scalar(125, 125, 5, 60))
+      Imgproc.circle(imgBTrack, pa, 4, new Scalar(125, 125, 5, 60))
+      Imgproc.circle(imgATrack, pa, 4, new Scalar(0, 0, 255))
+      Imgproc.circle(imgBTrack, pb, 4, new Scalar(0, 0, 255))
     }
 
-    concatenateImages(imgatrack, imgbtrack)
-
+    concatenateImages(imgATrack, imgBTrack)
   }
 
-  def findAndDrawCorrespondences(ima: Mat, imb: Mat): Mat = {
-    val (kpa: MatOfKeyPoint, kpb: MatOfKeyPoint, descriptorMatches: MatOfDMatch) = findKeypointMatches(ima, imb)
-
-    // Visualize the matches and save the visualization.
+  def drawCorrespondences(ima: Mat, imb: Mat, mkp: MatchingKeypoints): Mat = {
     val correspondenceImage = new Mat()
-    Features2d.drawMatches(ima, kpa, imb, kpb, descriptorMatches, correspondenceImage)
+    Features2d.drawMatches(ima, mkp.kpa, imb, mkp.kpb, mkp.descriptorMatches, correspondenceImage)
     correspondenceImage
   }
 
-  //  val imageAFilename = System.getProperty("imageA")
-  //  val imageBFilename = System.getProperty("imageB")
-  //  val imageA = "/home/n.werneck/DATA/TUM/rgbd_dataset_freiburg2_desk/rgb/1311868262.621668.png"
-  //  val imageB = "/home/n.werneck/DATA/TUM/rgbd_dataset_freiburg2_desk/rgb/1311868263.053350.png"
-  //  val correspondenceImage = findAndDrawCorrespondences(imageA, imageB)
-  //  Imgcodecs.imwrite("orb.png", correspondenceImage)
+  def findAndDrawTracks(ima: Mat, imb: Mat): Mat = {
+    drawTracks(ima, imb, findKeypointMatches(ima, imb))
+  }
+
+  def findAndDrawCorrespondences(ima: Mat, imb: Mat): Mat = {
+    drawCorrespondences(ima, imb, findKeypointMatches(ima, imb))
+  }
 }

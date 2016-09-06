@@ -20,6 +20,7 @@ class KeypointExtractor(detectorType: Int = FeatureDetector.ORB, descriptorType:
 
   def selectKeypoints(keyPoints: MatOfKeyPoint, number: Int = 50): MatOfKeyPoint = {
     def sortedKeyPoints = keyPoints.toArray.sortBy(-_.response).take(number)
+
     new MatOfKeyPoint(sortedKeyPoints: _*)
   }
 
