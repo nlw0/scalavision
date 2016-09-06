@@ -23,17 +23,10 @@ trait ImageProcessingServer {
       get {
         val stream = getClass.getResourceAsStream("/index.html")
         val lines = scala.io.Source.fromInputStream(stream).mkString
-        complete(
-          HttpEntity(
-            ContentTypes.`text/html(UTF-8)`, lines
-          )
-        )
+        complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, lines))
       }
     } ~ path("test") {
       get {
-        //          val imageFilename = "/home/n.werneck/buska.jpg"
-        //        val imageA = "/home/n.werneck/DATA/TUM/rgbd_dataset_freiburg2_desk/rgb/1311868262.621668.png"
-        //        val imageB = "/home/n.werneck/DATA/TUM/rgbd_dataset_freiburg2_desk/rgb/1311868263.053350.png"
         val imageAfilename = "/home/nlw/buska.jpg"
         val imageBfilename = "/home/nlw/buska.jpg"
 
@@ -66,16 +59,16 @@ trait ImageProcessingServer {
     }
   }
 
-  def imageFromByteString(bs: ByteString): Mat = {
-    val bb = new MatOfByte
-    bb.fromArray(bs.toArray: _*)
-    Imgcodecs.imdecode(bb, Imgcodecs.IMREAD_GRAYSCALE)
+  def imageFromByteString(bs: ByteString, flags: Int = Imgcodecs.IMREAD_GRAYSCALE): Mat = {
+    val mob = new MatOfByte
+    mob.fromArray(bs.toArray: _*)
+    Imgcodecs.imdecode(mob, flags)
   }
 
   def imageToByteArray(ii: Mat): Array[Byte] = {
-    val yowza = new MatOfByte
-    Imgcodecs.imencode(".jpg", ii, yowza)
-    yowza.toArray
+    val output = new MatOfByte
+    Imgcodecs.imencode(".jpg", ii, output)
+    output.toArray
   }
 }
 
