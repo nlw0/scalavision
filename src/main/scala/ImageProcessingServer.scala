@@ -1,4 +1,5 @@
 import akka.actor.ActorSystem
+import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.model.{HttpEntity, _}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
@@ -18,7 +19,7 @@ trait ImageProcessingServer {
 
   implicit val materializer: Materializer
 
-  val route =
+  val userRoutes =
     path("camera") {
       get {
         val stream = getClass.getResourceAsStream("/index.html")
@@ -42,19 +43,19 @@ trait ImageProcessingServer {
       }
     } ~ uploadFile
 
-  def uploadFile: Route = {
-    path("upload") {
-      fileUpload("img") { case (metadata, byteSource) =>
-        val aa: Future[ByteString] = byteSource.runReduce((a, b) => a concat b)
-        val bb: Future[Array[Byte]] = aa map { bs =>
-          val aa = imageFromByteString(bs)
-          val ii = TestKeypointExtractor.findAndDrawCorrespondences(aa, aa)
-          imageToByteArray(ii)
-        }
+  def uploadFile: Route = path("upload") {
+    fileUpload("img") { case (metadata, byteSource) =>
+      val aa: Future[ByteString] = byteSource.runReduce((a, b) => a concat b)
+      val bb: Future[Array[Byte]] = aa map { bs =>
+        println("** chegou um arquivo")
+        val aa = imageFromByteString(bs)
+        val ii = TestKeypointExtractor.findAndDrawCorrespondences(aa, aa)
+        imageToByteArray(ii)
+      }
 
-        onSuccess(bb) { ww =>
-          complete(HttpEntity(MediaTypes.`image/jpeg`, ww))
-        }
+      onSuccess(bb) { ww =>
+        println("** retornando")
+        complete(HttpEntity(MediaTypes.`image/jpeg`, ww))
       }
     }
   }
@@ -70,5 +71,16 @@ trait ImageProcessingServer {
     Imgcodecs.imencode(".jpg", ii, output)
     output.toArray
   }
-}
 
+  val corsHeaders = List(
+    RawHeader("Access-Control-Allow-Origin", "*"),
+    RawHeader("Access-Control-Allow-Methods", "GET, POST, PUT, OPTIONS, DELETE"),
+    RawHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization")
+  )
+
+  val corsRoutes = respondWithHeaders(corsHeaders) {
+    userRoutes
+  }
+
+  val route = corsRoutes
+}
