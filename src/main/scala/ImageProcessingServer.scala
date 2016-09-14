@@ -49,7 +49,7 @@ trait ImageProcessingServer {
       val bb: Future[Array[Byte]] = aa map { bs =>
         println("** chegou um arquivo")
         val aa = imageFromByteString(bs)
-        val ii = TestKeypointExtractor.findAndDrawTracks(aa, aa)
+        val ii = TestKeypointExtractor.findAndDrawFeatures(aa)
         imageToByteArray(ii)
       }
 

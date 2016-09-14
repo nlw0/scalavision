@@ -42,7 +42,7 @@ object TestKeypointExtractor {
 
     for (aa <- mkp.descriptorMatches.toArray) {
       val pa = mkp.kpa.toArray.apply(aa.queryIdx).pt
-      val pb = mkp.kpb.toArray.apply(aa.trainIdx).pt
+      val pb = mkp.kpb.toArray.apply(aa.queryIdx).pt
       Imgproc.line(imgATrack, pa, pb, new Scalar(255, 255, 5, 60))
       Imgproc.line(imgBTrack, pa, pb, new Scalar(255, 255, 5, 60))
       Imgproc.circle(imgATrack, pb, 4, new Scalar(125, 125, 5, 60))
@@ -52,6 +52,18 @@ object TestKeypointExtractor {
     }
 
     concatenateImages(imgATrack, imgBTrack)
+  }
+
+  def findAndDrawFeatures(ima: Mat): Mat = {
+    val imgAFt = new Mat()
+    val (kpa, dca) = kpext.detectAndExtract(ima)
+    Imgproc.cvtColor(ima, imgAFt, Imgproc.COLOR_GRAY2RGB)
+
+    for (pa <- kpa.toArray) {
+      Imgproc.circle(imgAFt, pa.pt, 4, new Scalar(0, 0, 255), -1)
+    }
+
+    imgAFt
   }
 
   def drawCorrespondences(ima: Mat, imb: Mat, mkp: MatchingKeypoints): Mat = {
