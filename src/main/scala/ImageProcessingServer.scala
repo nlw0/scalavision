@@ -47,14 +47,16 @@ trait ImageProcessingServer {
     fileUpload("img") { case (metadata, byteSource) =>
       val aa: Future[ByteString] = byteSource.runReduce((a, b) => a concat b)
       val bb: Future[Array[Byte]] = aa map { bs =>
-        println("** chegou um arquivo")
+        val tt = System.currentTimeMillis
+        println(s"$tt chegou um arquivo")
         val aa = imageFromByteString(bs)
         val ii = TestKeypointExtractor.findAndDrawFeatures(aa)
         imageToByteArray(ii)
       }
 
       onSuccess(bb) { ww =>
-        println("** retornando")
+        val tt = System.currentTimeMillis
+        println(s"$tt retornando")
         complete(HttpEntity(MediaTypes.`image/jpeg`, ww))
       }
     }
