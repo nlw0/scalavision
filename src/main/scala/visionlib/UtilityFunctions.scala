@@ -1,13 +1,28 @@
+package visionlib
+
 import org.opencv.core._
 import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
 
 trait UtilityFunctions {
+
   def cannyFilter = {
     val theFilter = new Mat(3, 3, CvType.CV_32F)
     val cannyCoefficients = Array(-1.0f, 0.0f, 1.0f, -2.0f, 0.0f, 2.0f, -1.0f, 0.0f, 1.0f)
     theFilter.put(0, 0, cannyCoefficients)
     theFilter
+  }
+
+  def colorToGray(mat: Mat) = {
+    val imgGray = new Mat()
+    Imgproc.cvtColor(mat, imgGray, Imgproc.COLOR_RGB2GRAY)
+    imgGray
+  }
+
+  def grayToColor(mat: Mat) = {
+    val imgColor = new Mat()
+    Imgproc.cvtColor(mat, imgColor, Imgproc.COLOR_GRAY2RGB)
+    imgColor
   }
 
   def applyFilter(image: Mat, filter: Mat) = {
@@ -29,6 +44,7 @@ trait UtilityFunctions {
 
   def writeFloat(outputFloat: Mat, outFilename: String): Unit = {
     def outputInt = asType(outputFloat, CvType.CV_8UC3, 0.5, 128)
+
     Imgcodecs.imwrite(outFilename, outputInt)
   }
 

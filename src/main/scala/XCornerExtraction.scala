@@ -1,6 +1,7 @@
 import org.opencv.core._
 import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
+import visionlib.UtilityFunctions
 
 object XCornerExtraction extends App with UtilityFunctions {
 

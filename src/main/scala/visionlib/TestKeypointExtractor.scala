@@ -1,12 +1,13 @@
+package visionlib
+
 import org.opencv.core._
 import org.opencv.features2d.{DescriptorExtractor, DescriptorMatcher, FeatureDetector, Features2d}
 import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
 
-case class MatchingKeypoints(kpa: MatOfKeyPoint, kpb: MatOfKeyPoint, descriptorMatches: MatOfDMatch)
 
-object TestKeypointExtractor {
-  //extends App with UtilityFunctions {
+object TestKeypointExtractor extends UtilityFunctions {
+  //extends App with visionlib.UtilityFunctions {
   System.loadLibrary(Core.NATIVE_LIBRARY_NAME)
 
   val kpext = new KeypointExtractor(FeatureDetector.ORB, DescriptorExtractor.ORB)
@@ -24,8 +25,8 @@ object TestKeypointExtractor {
   }
 
   def findKeypointMatches(ima: Mat, imb: Mat): MatchingKeypoints = {
-    val (kpa, dca) = kpext.detectAndExtract(ima)
-    val (kpb, dcb) = kpext.detectAndExtract(imb)
+    val (kpa, dca) = kpext.detectAndDescribe(ima)
+    val (kpb, dcb) = kpext.detectAndDescribe(imb)
 
     val matcher = DescriptorMatcher.create(DescriptorMatcher.BRUTEFORCE_HAMMING)
 
@@ -55,15 +56,16 @@ object TestKeypointExtractor {
   }
 
   def findAndDrawFeatures(ima: Mat): Mat = {
-    val imgAFt = new Mat()
-    val (kpa, dca) = kpext.detectAndExtract(ima)
-    Imgproc.cvtColor(ima, imgAFt, Imgproc.COLOR_GRAY2RGB)
+    val imgGray = colorToGray(ima)
+    val (kp, _) = kpext.detectAndDescribe(imgGray)
+    //val imgOut = grayToColor(imgGray)
+    val imgOut = ima.clone()
 
-    for (pa <- kpa.toArray) {
-      Imgproc.circle(imgAFt, pa.pt, 4, new Scalar(0, 0, 255), -1)
+    kp.toArray foreach { k =>
+      Imgproc.circle(imgOut, k.pt, 3, new Scalar(0, 200, 0), -1)
     }
 
-    imgAFt
+    imgOut
   }
 
   def drawCorrespondences(ima: Mat, imb: Mat, mkp: MatchingKeypoints): Mat = {

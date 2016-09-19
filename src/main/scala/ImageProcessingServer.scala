@@ -7,6 +7,7 @@ import akka.stream.Materializer
 import akka.util.ByteString
 import org.opencv.core.{Mat, MatOfByte}
 import org.opencv.imgcodecs.Imgcodecs
+import visionlib.TestKeypointExtractor
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
 

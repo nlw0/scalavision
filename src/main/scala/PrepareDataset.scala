@@ -3,6 +3,7 @@ import java.io.File
 import org.opencv.core.{Core, Mat}
 import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
+import visionlib.{TestKeypointExtractor, UtilityFunctions}
 
 object PrepareDataset extends App {
   System.loadLibrary(Core.NATIVE_LIBRARY_NAME)
