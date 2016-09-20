@@ -1,5 +1,5 @@
 package visionlib
 
-import org.opencv.core.{MatOfDMatch, MatOfKeyPoint}
+import org.opencv.core.{DMatch, MatOfKeyPoint}
 
-case class MatchingKeypoints(kpa: MatOfKeyPoint, kpb: MatOfKeyPoint, descriptorMatches: MatOfDMatch)
+case class MatchingKeypoints(kpa: MatOfKeyPoint, kpb: MatOfKeyPoint, descriptorMatches: Seq[DMatch])

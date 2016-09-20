@@ -17,7 +17,7 @@ object PrepareDataset extends App {
 
   for (((imga, imgb), n) <- (images zip images.tail).zipWithIndex) {
     println(n)
-    val out = TestKeypointExtractor.findAndDrawTracks(imga, imgb)
+    val out = TestKeypointExtractor.findAndDrawTracksBoth(imga, imgb)
     Imgcodecs.imwrite(f"out/$n%02d.jpg", out)
   }
 

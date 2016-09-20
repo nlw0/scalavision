@@ -35,7 +35,8 @@ trait ImageProcessingServer {
         val imgA = TestKeypointExtractor.openImage(imageAfilename)
         val imgB = TestKeypointExtractor.openImage(imageBfilename)
         val mkp = TestKeypointExtractor.findKeypointMatches(imgA, imgB)
-        val img = TestKeypointExtractor.drawCorrespondences(imgA, imgB, mkp)
+        //val img = TestKeypointExtractor.drawCorrespondences(imgA, imgB, mkp)
+        val img = TestKeypointExtractor.drawTracksBoth(imgA, imgB, mkp)
         val yowza = new MatOfByte
 
         Imgcodecs.imencode(".jpg", img, yowza)
