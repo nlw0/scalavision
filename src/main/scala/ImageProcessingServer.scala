@@ -7,7 +7,7 @@ import akka.stream.Materializer
 import akka.util.ByteString
 import org.opencv.core.{Mat, MatOfByte}
 import org.opencv.imgcodecs.Imgcodecs
-import visionlib.TestKeypointExtractor
+import visionlib.{Tracker, TestKeypointExtractor}
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
 
@@ -51,9 +51,12 @@ trait ImageProcessingServer {
       val bb: Future[Array[Byte]] = aa map { bs =>
         val tt = System.currentTimeMillis
         println(s"$tt chegou um arquivo")
-        val aa = imageFromByteString(bs)
-        val ii = TestKeypointExtractor.findAndDrawFeatures(aa)
-        imageToByteArray(ii)
+
+        val aa = imageFromByteString(bs, Imgcodecs.IMREAD_COLOR)
+
+        val ii = Tracker.memtrack(aa)
+
+        imageToByteArray(ii.get)
       }
 
       onSuccess(bb) { ww =>

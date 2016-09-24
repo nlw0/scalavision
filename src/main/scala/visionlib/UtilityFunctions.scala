@@ -13,8 +13,10 @@ trait UtilityFunctions {
     theFilter
   }
 
-  def colorToGray(mat: Mat) = {
+  def colorToGray(mat: Mat) =
+    if (mat.channels == 1) mat else {
     val imgGray = new Mat()
+    println("**" + mat.channels())
     Imgproc.cvtColor(mat, imgGray, Imgproc.COLOR_RGB2GRAY)
     imgGray
   }

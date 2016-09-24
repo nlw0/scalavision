@@ -17,7 +17,7 @@ class KeypointExtractor(detectorType: Int = FeatureDetector.ORB, descriptorType:
     val descriptors = new Mat
     descriptor.compute(image, bestKeypoints, descriptors)
 
-    (bestKeypoints, descriptors)
+    ExtractedKeypoints(bestKeypoints, descriptors)
   }
 
   def selectKeypoints(number: Int = 50)(keyPoints: MatOfKeyPoint): MatOfKeyPoint = {
@@ -32,3 +32,5 @@ class KeypointExtractor(detectorType: Int = FeatureDetector.ORB, descriptorType:
     keyPoints
   }
 }
+
+case class ExtractedKeypoints(kp: MatOfKeyPoint, desc : Mat)

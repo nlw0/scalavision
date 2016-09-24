@@ -13,6 +13,7 @@ object Boot extends App with ImageProcessingServer {
 
   // Http().bindAndHandle(routes, "0.0.0.0", 9000)
 
+  println(Core.NATIVE_LIBRARY_NAME)
   System.loadLibrary(Core.NATIVE_LIBRARY_NAME)
 
   val bindingFuture = Http().bindAndHandle(route, "localhost", 8080)

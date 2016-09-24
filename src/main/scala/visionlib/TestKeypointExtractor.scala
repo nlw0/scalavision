@@ -26,27 +26,34 @@ object TestKeypointExtractor extends UtilityFunctions {
     m
   }
 
+  def extractFeatures(img: Mat) = ImageAndDescriptors(img, kpext.detectAndDescribe(img))
+
   def findKeypointMatches(ima: Mat, imb: Mat): MatchingKeypoints = {
-    val (kpa, dca) = kpext.detectAndDescribe(ima)
-    val (kpb, dcb) = kpext.detectAndDescribe(imb)
+    val kda = kpext.detectAndDescribe(ima)
+    val kdb = kpext.detectAndDescribe(imb)
+
+    matchKeypoints(kda, kdb)
+  }
+
+  def matchKeypoints(kda: ExtractedKeypoints, kdb: ExtractedKeypoints) = {
+
+    val MAGIC_LOWE_THRESHOLD = 0.8
 
     val matcher = DescriptorMatcher.create(DescriptorMatcher.BRUTEFORCE_SL2)
 
     val descriptorMatches = new util.ArrayList[MatOfDMatch]()
 
-    // matcher.`match`(dca, dcb, descriptorMatches)
-
-    matcher.knnMatch(dca, dcb, descriptorMatches, 2)
+    matcher.knnMatch(kda.desc, kdb.desc, descriptorMatches, 2)
 
     val xx = for {i <- 0 until descriptorMatches.size
-                  ratio = 0.8
                   ma = descriptorMatches.get(i).toArray.apply(0)
                   mb = descriptorMatches.get(i).toArray.apply(1)
-                  if ma.distance < ratio * mb.distance
+                  if ma.distance < MAGIC_LOWE_THRESHOLD * mb.distance
     } yield ma
 
-    MatchingKeypoints(kpa, kpb, xx)
+    MatchingKeypoints(kda.kp, kdb.kp, xx)
   }
+
 
   def drawTracksBoth(ima: Mat, imb: Mat, mkp: MatchingKeypoints): Mat = {
     val imgATrack = new Mat()
@@ -76,9 +83,9 @@ object TestKeypointExtractor extends UtilityFunctions {
     for (ma <- mkp.descriptorMatches) {
       val pa = mkp.kpa.toArray.apply(ma.queryIdx).pt
       val pb = mkp.kpb.toArray.apply(ma.trainIdx).pt
-      Imgproc.line(imgBTrack, pa, pb, new Scalar(255, 255, 5, 60))
-      Imgproc.circle(imgBTrack, pa, 4, new Scalar(125, 125, 5, 60))
-      Imgproc.circle(imgBTrack, pb, 4, new Scalar(0, 0, 255))
+      Imgproc.line(imgBTrack, pa, pb, new Scalar(5, 255, 255, 60))
+      Imgproc.circle(imgBTrack, pa, 4, new Scalar(5, 125, 125, 60))
+      Imgproc.circle(imgBTrack, pb, 4, new Scalar(255, 0, 0))
     }
 
     imgBTrack
@@ -86,10 +93,10 @@ object TestKeypointExtractor extends UtilityFunctions {
 
   def findAndDrawFeatures(ima: Mat): Mat = {
     val imgGray = colorToGray(ima)
-    val (kp, _) = kpext.detectAndDescribe(imgGray)
+    val kpd = kpext.detectAndDescribe(imgGray)
 
     val imgOut = ima.clone()
-    kp.toArray foreach { k => Imgproc.circle(imgOut, k.pt, 3, new Scalar(0, 200, 0), -1) }
+    kpd.kp.toArray foreach { k => Imgproc.circle(imgOut, k.pt, 3, new Scalar(0, 200, 0), -1) }
     imgOut
   }
 
@@ -106,3 +113,5 @@ object TestKeypointExtractor extends UtilityFunctions {
     imb
   }
 }
+
+case class ImageAndDescriptors(image: Mat, kps: ExtractedKeypoints)

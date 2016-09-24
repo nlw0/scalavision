@@ -83,6 +83,7 @@ function snapshot() {
         var encoded = Base64.encodeBinary(client.response);
         var dataURL="data:image/jpeg;base64," + encoded;
         document.querySelector('#result').src = dataURL;
+        snapshot();
       }
     }
 
