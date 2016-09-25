@@ -65,7 +65,7 @@ function videoError(e) {
 }
 
 function snapshot() {
-  setTimeout(snapshot, 200);
+//  setTimeout(snapshot, 5000);
 
   if (localMediaStream) {
 
@@ -85,6 +85,7 @@ function snapshot() {
         var encoded = Base64.encodeBinary(client.response);
         var dataURL="data:image/jpeg;base64," + encoded;
         document.querySelector('#result').src = dataURL;
+	setTimeout(snapshot, 200);
       }
     }
 
