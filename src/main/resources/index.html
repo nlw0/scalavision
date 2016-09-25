@@ -65,6 +65,8 @@ function videoError(e) {
 }
 
 function snapshot() {
+  setTimeout(snapshot, 200);
+
   if (localMediaStream) {
 
     canvas.width = video.clientWidth;
@@ -83,7 +85,6 @@ function snapshot() {
         var encoded = Base64.encodeBinary(client.response);
         var dataURL="data:image/jpeg;base64," + encoded;
         document.querySelector('#result').src = dataURL;
-        snapshot();
       }
     }
 
@@ -97,6 +98,7 @@ function snapshot() {
   }
 }
 
+window.onload = snapshot();
 
 Base64 = {
 
