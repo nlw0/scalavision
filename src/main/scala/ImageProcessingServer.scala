@@ -56,7 +56,7 @@ trait ImageProcessingServer {
 
         val ii = Tracker.memtrack(aa)
 
-        imageToByteArray(ii.get)
+        imageToByteArray(ii.getOrElse(aa))
       }
 
       onSuccess(bb) { ww =>
