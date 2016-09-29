@@ -7,6 +7,13 @@ class KeypointExtractor(detectorType: Int = FeatureDetector.ORB, descriptorType:
   extends UtilityFunctions {
 
   val detector = FeatureDetector.create(detectorType)
+
+  val x = Thread.currentThread().getContextClassLoader()
+  private val yaya = getClass.getResource("orb_parameters.yaml")
+  println(yaya)
+  detector.read(yaya.getPath)
+  //  detector.read("/home/nwerneck/src/tracker-gui/tracker-gui/src/main/resources/orb_parameters.yaml")
+
   val descriptor = DescriptorExtractor.create(descriptorType)
 
   def detectAndDescribe(image: Mat) = {
@@ -33,4 +40,4 @@ class KeypointExtractor(detectorType: Int = FeatureDetector.ORB, descriptorType:
   }
 }
 
-case class ExtractedKeypoints(kp: MatOfKeyPoint, desc : Mat)
+case class ExtractedKeypoints(kp: MatOfKeyPoint, desc: Mat)
