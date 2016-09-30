@@ -12,7 +12,8 @@ object TestKeypointExtractor extends UtilityFunctions {
   //extends App with visionlib.UtilityFunctions {
   System.loadLibrary(Core.NATIVE_LIBRARY_NAME)
 
-  val kpext = new KeypointExtractor(FeatureDetector.ORB, DescriptorExtractor.ORB)
+  // val kpext = new KeypointExtractor(FeatureDetector.ORB, DescriptorExtractor.ORB)
+  val kpext = new KeypointExtractor(FeatureDetector.PYRAMID_AKAZE, DescriptorExtractor.AKAZE)
 
   def openImage(fileName: String): Mat = {
     Imgcodecs.imread(fileName, Imgcodecs.IMREAD_GRAYSCALE)

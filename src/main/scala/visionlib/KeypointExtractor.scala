@@ -8,11 +8,10 @@ class KeypointExtractor(detectorType: Int = FeatureDetector.ORB, descriptorType:
 
   val detector = FeatureDetector.create(detectorType)
 
-  val x = Thread.currentThread().getContextClassLoader()
-  private val yaya = getClass.getResource("orb_parameters.yaml")
-  println(yaya)
-  detector.read(yaya.getPath)
-  //  detector.read("/home/nwerneck/src/tracker-gui/tracker-gui/src/main/resources/orb_parameters.yaml")
+//  val x = Thread.currentThread().getContextClassLoader()
+//  private val yaya = getClass.getResource("orb_parameters.yaml")
+//  println(yaya)
+//  detector.read(yaya.getPath)
 
   val descriptor = DescriptorExtractor.create(descriptorType)
 
