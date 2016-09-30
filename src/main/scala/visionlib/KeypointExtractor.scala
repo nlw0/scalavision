@@ -8,10 +8,8 @@ class KeypointExtractor(detectorType: Int = FeatureDetector.ORB, descriptorType:
 
   val detector = FeatureDetector.create(detectorType)
 
-//  val x = Thread.currentThread().getContextClassLoader()
-//  private val yaya = getClass.getResource("orb_parameters.yaml")
-//  println(yaya)
-//  detector.read(yaya.getPath)
+  if (detectorType == FeatureDetector.ORB)
+    detector.read(getClass.getResource("orb_parameters.yaml").getPath)
 
   val descriptor = DescriptorExtractor.create(descriptorType)
 
@@ -27,7 +25,7 @@ class KeypointExtractor(detectorType: Int = FeatureDetector.ORB, descriptorType:
   }
 
   def selectKeypoints(number: Int = 50)(keyPoints: MatOfKeyPoint): MatOfKeyPoint = {
-    def sortedKeyPoints = keyPoints.toArray.sortBy(-_.response).take(number)
+    def sortedKeyPoints = keyPoints.toArray sortBy (-_.response) take number
 
     new MatOfKeyPoint(sortedKeyPoints: _*)
   }

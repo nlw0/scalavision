@@ -2,6 +2,7 @@ package visionlib
 
 import java.util
 
+import scala.collection.JavaConversions._
 import org.opencv.core._
 import org.opencv.features2d.{DescriptorExtractor, DescriptorMatcher, FeatureDetector, Features2d}
 import org.opencv.imgcodecs.Imgcodecs
@@ -9,15 +10,11 @@ import org.opencv.imgproc.Imgproc
 
 
 object TestKeypointExtractor extends UtilityFunctions {
-  //extends App with visionlib.UtilityFunctions {
   System.loadLibrary(Core.NATIVE_LIBRARY_NAME)
 
-  // val kpext = new KeypointExtractor(FeatureDetector.ORB, DescriptorExtractor.ORB)
   val kpext = new KeypointExtractor(FeatureDetector.PYRAMID_AKAZE, DescriptorExtractor.AKAZE)
 
-  def openImage(fileName: String): Mat = {
-    Imgcodecs.imread(fileName, Imgcodecs.IMREAD_GRAYSCALE)
-  }
+  def openImage(fileName: String): Mat = Imgcodecs.imread(fileName, Imgcodecs.IMREAD_GRAYSCALE)
 
   def concatenateImages(matA: Mat, matB: Mat) = {
     val m = new Mat(matA.rows(), matA.cols() + matB.cols(), matA.`type`())
@@ -41,20 +38,14 @@ object TestKeypointExtractor extends UtilityFunctions {
     val MAGIC_LOWE_THRESHOLD = 0.8
 
     val matcher = DescriptorMatcher.create(DescriptorMatcher.BRUTEFORCE_SL2)
-
     val descriptorMatches = new util.ArrayList[MatOfDMatch]()
-
     matcher.knnMatch(kda.desc, kdb.desc, descriptorMatches, 2)
 
-    val xx = for {i <- 0 until descriptorMatches.size
-                  ma = descriptorMatches.get(i).toArray.apply(0)
-                  mb = descriptorMatches.get(i).toArray.apply(1)
-                  if ma.distance < MAGIC_LOWE_THRESHOLD * mb.distance
-    } yield ma
+    val xx = for {Array(ma, mb) <- descriptorMatches map (_.toArray)
+                  if ma.distance < MAGIC_LOWE_THRESHOLD * mb.distance} yield ma
 
     MatchingKeypoints(kda.kp, kdb.kp, xx)
   }
-
 
   def drawTracksBoth(ima: Mat, imb: Mat, mkp: MatchingKeypoints): Mat = {
     val imgATrack = new Mat()
@@ -113,6 +104,27 @@ object TestKeypointExtractor extends UtilityFunctions {
     // drawCorrespondences(ima, imb, findKeypointMatches(ima, imb))
     imb
   }
+
+  def estimateTransform(mkp: MatchingKeypoints) = {
+    val MatchingKeypoints(a, b, c) = mkp
+
+    val (ax, ay) = ((0.0, 0.0) /: mkp.descriptorMatches) { case ((xx, yy), aa) =>
+      val pa = mkp.kpa.toArray.apply(aa.queryIdx).pt
+      val pb = mkp.kpb.toArray.apply(aa.trainIdx).pt
+
+      (xx + pb.x - pa.x, yy + pb.y - pa.y)
+    }
+    val N = mkp.descriptorMatches.size
+    // println(f"${ax / N}%7.2f ${ay / N}%7.2f")
+    (ax / N, ay / N)
+  }
+
+  def drawTransform(img: Mat, mkp: MatchingKeypoints) = {
+    val (ax, ay) = estimateTransform(mkp)
+    Imgproc.line(img, new Point(50, 50), new Point(50 + ax, 50 + ay), new Scalar(0, 255, 5, 60), 5)
+    img
+  }
+
 }
 
 case class ImageAndDescriptors(image: Mat, kps: ExtractedKeypoints)
