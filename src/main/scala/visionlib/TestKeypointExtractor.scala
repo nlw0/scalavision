@@ -2,6 +2,8 @@ package visionlib
 
 import java.util
 
+import org.opencv.calib3d.Calib3d
+
 import scala.collection.JavaConversions._
 import org.opencv.core._
 import org.opencv.features2d.{DescriptorExtractor, DescriptorMatcher, FeatureDetector, Features2d}
@@ -105,18 +107,37 @@ object TestKeypointExtractor extends UtilityFunctions {
     imb
   }
 
+  def randomSample[A](x: Iterable[A], n: Int) = {
+    scala.util.Random.shuffle(x) take n
+  }
+
   def estimateTransform(mkp: MatchingKeypoints) = {
-    val MatchingKeypoints(a, b, c) = mkp
 
-    val (ax, ay) = ((0.0, 0.0) /: mkp.descriptorMatches) { case ((xx, yy), aa) =>
-      val pa = mkp.kpa.toArray.apply(aa.queryIdx).pt
-      val pb = mkp.kpb.toArray.apply(aa.trainIdx).pt
+    val pta = mkp.descriptorMatches map { aa => mkp.kpa.toArray.apply(aa.queryIdx).pt }
+    val ptb = mkp.descriptorMatches map { aa => mkp.kpb.toArray.apply(aa.trainIdx).pt }
 
-      (xx + pb.x - pa.x, yy + pb.y - pa.y)
-    }
-    val N = mkp.descriptorMatches.size
-    // println(f"${ax / N}%7.2f ${ay / N}%7.2f")
-    (ax / N, ay / N)
+    val obj = new MatOfPoint2f()
+    obj.fromList(pta)
+
+    val scene = new MatOfPoint2f()
+    scene.fromList(ptb)
+
+    val xx = Calib3d.findHomography(obj, scene, Calib3d.LMEDS, 8)
+
+    //    val (ax, ay) = ((0.0, 0.0) /: mysample) { case ((xx, yy), (pa, pb)) =>
+    //      (xx + pb.x - pa.x, yy + pb.y - pa.y)
+    //    }
+    //    val N = mkp.descriptorMatches.size
+    //    // println(f"${ax / N}%7.2f ${ay / N}%7.2f")
+    //    (ax / N, ay / N)
+
+    //        pts = np.float32([ [0,0],[0,h-1],[w-1,h-1],[w-1,0] ]).reshape(-1,1,2)
+    //    dst = cv2.perspectiveTransform(pts,M)
+    //
+    //    img2 = cv2.polylines(img2,[np.int32(dst)],True,255,3, cv2.LINE_AA)
+
+    (xx.get(0, 2).head, xx.get(1, 2).head)
+
   }
 
   def drawTransform(img: Mat, mkp: MatchingKeypoints) = {
