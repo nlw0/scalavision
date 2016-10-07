@@ -67,6 +67,11 @@ trait UtilityFunctions {
   def saveToFile(filename: String)(image: Mat) =
     Imgcodecs.imwrite(filename, image)
 
+  def loadImage(filename: String) =
+    Imgcodecs.imread(filename)
+
+  def getFilenameFromResource(resource: String): String =
+    getClass.getResource(resource).getPath
 
 }
 

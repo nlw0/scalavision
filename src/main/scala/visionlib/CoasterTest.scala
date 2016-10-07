@@ -1,11 +1,7 @@
 package visionlib
 
-import org.opencv.core._
-import org.opencv.imgcodecs.Imgcodecs
 
-
-object CoasterTest extends App with TestKeypointExtractor {
-  System.loadLibrary(Core.NATIVE_LIBRARY_NAME)
+object CoasterTest extends VisionApp with TestKeypointExtractor {
 
   val INPUT_SIZE = 400
 
@@ -19,9 +15,8 @@ object CoasterTest extends App with TestKeypointExtractor {
 
   def imagePairs = fileNamesFromDirectory("/coaster") map openResource sliding 2
 
-  def openResource = (getClass.getResource(_: String).getPath) andThen
-                     (Imgcodecs.imread(_: String)) andThen
+  def openResource = getFilenameFromResource _ andThen
+                     loadImage andThen
                      scaleImageHeight(INPUT_SIZE)
-
 }
 
