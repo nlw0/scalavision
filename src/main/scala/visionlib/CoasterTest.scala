@@ -7,15 +7,21 @@ import org.opencv.imgcodecs.Imgcodecs
 object CoasterTest extends App with TestKeypointExtractor {
   System.loadLibrary(Core.NATIVE_LIBRARY_NAME)
 
+  val INPUT_SIZE = 400
+
   for ((Seq(imga, imgb), nn) <- imagePairs.zipWithIndex) {
-    val qq = findAndDrawTracksBoth(imga, imgb)
-    Imgcodecs.imwrite(f"/home/nlw/coisa-$nn%02d.png", qq)
+    val outputImage = findAndDrawTracksBoth(imga, imgb)
+
+    def filename = { num: Int => f"/home/nlw/coisa-$num%02d.png" }
+
+    saveToFile(filename(nn))(outputImage)
   }
 
-  private val imagePairs = fileNamesFromDirectory("/coaster") map openResource sliding 2
+  def imagePairs = fileNamesFromDirectory("/coaster") map openResource sliding 2
 
   def openResource = (getClass.getResource(_: String).getPath) andThen
                      (Imgcodecs.imread(_: String)) andThen
-                     scaleImageHeight(400)
+                     scaleImageHeight(INPUT_SIZE)
+
 }
 

@@ -15,11 +15,11 @@ trait UtilityFunctions {
 
   def colorToGray(mat: Mat) =
     if (mat.channels == 1) mat else {
-    val imgGray = new Mat()
-    println("**" + mat.channels())
-    Imgproc.cvtColor(mat, imgGray, Imgproc.COLOR_RGB2GRAY)
-    imgGray
-  }
+      val imgGray = new Mat()
+      println("**" + mat.channels())
+      Imgproc.cvtColor(mat, imgGray, Imgproc.COLOR_RGB2GRAY)
+      imgGray
+    }
 
   def grayToColor(mat: Mat) = {
     val imgColor = new Mat()
@@ -56,13 +56,16 @@ trait UtilityFunctions {
     out
   }
 
-  def fileNamesFromDirectory(directory:String) = {
+  def fileNamesFromDirectory(directory: String) = {
     val filenamesStream = getClass.getResourceAsStream(directory + "/")
     val fileNames = scala.io.Source.fromInputStream(filenamesStream).getLines()
     fileNames map { fileName =>
       s"$directory/$fileName"
     }
   }
+
+  def saveToFile(filename: String)(image: Mat) =
+    Imgcodecs.imwrite(filename, image)
 
 
 }
