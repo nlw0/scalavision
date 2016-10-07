@@ -10,11 +10,13 @@ import org.opencv.features2d.{DescriptorExtractor, DescriptorMatcher, FeatureDet
 import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
 
-
-object TestKeypointExtractor extends UtilityFunctions {
-  System.loadLibrary(Core.NATIVE_LIBRARY_NAME)
-
+object kpext {
   val kpext = new KeypointExtractor(FeatureDetector.PYRAMID_AKAZE, DescriptorExtractor.AKAZE)
+  val detectAndDescribe = kpext.detectAndDescribe _
+}
+
+trait TestKeypointExtractor extends UtilityFunctions {
+//  System.loadLibrary(Core.NATIVE_LIBRARY_NAME)
 
   def openImage(fileName: String): Mat = Imgcodecs.imread(fileName, Imgcodecs.IMREAD_GRAYSCALE)
 
@@ -148,4 +150,3 @@ object TestKeypointExtractor extends UtilityFunctions {
 
 }
 
-case class ImageAndDescriptors(image: Mat, kps: ExtractedKeypoints)

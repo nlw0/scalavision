@@ -37,4 +37,3 @@ class KeypointExtractor(detectorType: Int = FeatureDetector.ORB, descriptorType:
   }
 }
 
-case class ExtractedKeypoints(kp: MatOfKeyPoint, desc: Mat)
