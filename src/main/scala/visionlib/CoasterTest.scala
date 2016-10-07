@@ -19,4 +19,3 @@ object CoasterTest extends VisionApp with TestKeypointExtractor {
                      loadImage andThen
                      scaleImageHeight(INPUT_SIZE)
 }
-
