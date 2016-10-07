@@ -13,7 +13,7 @@ object CoasterTest extends VisionApp with TestKeypointExtractor {
     saveToFile(filename(nn))(outputImage)
   }
 
-  def imagePairs = fileNamesFromDirectory("/coaster") map openResource sliding 2
+  def imagePairs = resourcesFromDirectory("/coaster") map openResource sliding 2
 
   def openResource = getFilenameFromResource _ andThen
                      loadImage andThen

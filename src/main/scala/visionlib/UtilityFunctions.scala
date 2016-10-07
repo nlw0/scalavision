@@ -56,7 +56,7 @@ trait UtilityFunctions {
     out
   }
 
-  def fileNamesFromDirectory(directory: String) = {
+  def resourcesFromDirectory(directory: String) = {
     val filenamesStream = getClass.getResourceAsStream(directory + "/")
     val fileNames = scala.io.Source.fromInputStream(filenamesStream).getLines()
     fileNames map { fileName =>
