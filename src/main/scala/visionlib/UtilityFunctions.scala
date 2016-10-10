@@ -46,7 +46,6 @@ trait UtilityFunctions {
 
   def writeFloat(outputFloat: Mat, outFilename: String): Unit = {
     def outputInt = asType(outputFloat, CvType.CV_8UC3, 0.5, 128)
-
     Imgcodecs.imwrite(outFilename, outputInt)
   }
 
@@ -54,6 +53,22 @@ trait UtilityFunctions {
     val out = new Mat(rows, img.cols() * rows / img.rows(), img.`type`())
     Imgproc.resize(img, out, out.size(), 0, 0, Imgproc.INTER_AREA)
     out
+  }
+
+  def concatenateImages(matA: Mat, matB: Mat) = {
+    val m = new Mat(matA.rows(), matA.cols() + matB.cols(), matA.`type`())
+    val cols = matA.cols()
+    matA.copyTo(m.colRange(0, cols))
+    matB.copyTo(m.colRange(cols, cols * 2))
+    m
+  }
+
+  def concatenateImagesVertical(matA: Mat, matB: Mat) = {
+    val m = new Mat(matA.rows() + matB.rows(), matA.cols(), matA.`type`())
+    val rows = matA.rows()
+    matA.copyTo(m.rowRange(0, rows))
+    matB.copyTo(m.rowRange(rows, rows * 2))
+    m
   }
 
   def resourcesFromDirectory(directory: String) = {
@@ -69,6 +84,9 @@ trait UtilityFunctions {
 
   def loadImage(filename: String) =
     Imgcodecs.imread(filename)
+
+  def loadImageGrayscale(fileName: String): Mat =
+    Imgcodecs.imread(fileName, Imgcodecs.IMREAD_GRAYSCALE)
 
   def getFilenameFromResource(resource: String): String =
     getClass.getResource(resource).getPath

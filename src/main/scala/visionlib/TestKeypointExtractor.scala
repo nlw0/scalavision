@@ -3,12 +3,11 @@ package visionlib
 import java.util
 
 import org.opencv.calib3d.Calib3d
+import org.opencv.core._
+import org.opencv.features2d.{DescriptorExtractor, DescriptorMatcher, FeatureDetector}
+import org.opencv.imgproc.Imgproc
 
 import scala.collection.JavaConversions._
-import org.opencv.core._
-import org.opencv.features2d.{DescriptorExtractor, DescriptorMatcher, FeatureDetector, Features2d}
-import org.opencv.imgcodecs.Imgcodecs
-import org.opencv.imgproc.Imgproc
 
 object kpext {
   val kpext = new KeypointExtractor(FeatureDetector.PYRAMID_AKAZE, DescriptorExtractor.AKAZE)
@@ -16,17 +15,6 @@ object kpext {
 }
 
 trait TestKeypointExtractor extends UtilityFunctions {
-//  System.loadLibrary(Core.NATIVE_LIBRARY_NAME)
-
-  def openImage(fileName: String): Mat = Imgcodecs.imread(fileName, Imgcodecs.IMREAD_GRAYSCALE)
-
-  def concatenateImages(matA: Mat, matB: Mat) = {
-    val m = new Mat(matA.rows(), matA.cols() + matB.cols(), matA.`type`())
-    val cols = matA.cols()
-    matA.copyTo(m.colRange(0, cols))
-    matB.copyTo(m.colRange(cols, cols * 2))
-    m
-  }
 
   def extractFeatures(img: Mat) = ImageAndDescriptors(img, kpext.detectAndDescribe(img))
 
@@ -71,6 +59,20 @@ trait TestKeypointExtractor extends UtilityFunctions {
     concatenateImages(imgATrack, imgBTrack)
   }
 
+  def drawTransformsBoth(ima: Mat, imb: Mat, mkp: MatchingKeypoints): Mat = {
+
+    val H = homographyFromMatches(mkp)
+
+    val imat = new Mat()
+    val imbt = new Mat()
+
+    Imgproc.warpPerspective(ima, imat, H, ima.size)
+    Imgproc.warpPerspective(imb, imbt, H.inv(), ima.size)
+
+    concatenateImages(imbt, imat)
+  }
+
+
   def drawTracks(image: Mat, mkp: MatchingKeypoints): Mat = {
     val imgBTrack = new Mat()
     image.copyTo(imgBTrack)
@@ -96,54 +98,33 @@ trait TestKeypointExtractor extends UtilityFunctions {
     imgOut
   }
 
-  def findAndDrawTracksBoth(ima: Mat, imb: Mat): Mat = {
-    drawTracksBoth(ima, imb, findKeypointMatches(ima, imb))
-  }
+  def findAndDrawTracksBoth(ima: Mat, imb: Mat): Mat = drawTracksBoth(ima, imb, findKeypointMatches(ima, imb))
 
-  def findAndDrawTracks(ima: Mat, imb: Mat): Mat = {
-    drawTracks(imb, findKeypointMatches(ima, imb))
-  }
+  def findAndDrawTracks(ima: Mat, imb: Mat): Mat = drawTracks(imb, findKeypointMatches(ima, imb))
 
-  def findAndDrawCorrespondences(ima: Mat, imb: Mat): Mat = {
-    // drawCorrespondences(ima, imb, findKeypointMatches(ima, imb))
-    imb
-  }
-
-  def randomSample[A](x: Iterable[A], n: Int) = {
+  def randomSample[A](x: Iterable[A], n: Int) =
     scala.util.Random.shuffle(x) take n
-  }
 
-  def estimateTransform(mkp: MatchingKeypoints) = {
-
+  def homographyFromMatches(mkp: MatchingKeypoints) = {
     val pta = mkp.descriptorMatches map { aa => mkp.kpa.toArray.apply(aa.queryIdx).pt }
     val ptb = mkp.descriptorMatches map { aa => mkp.kpb.toArray.apply(aa.trainIdx).pt }
 
-    val obj = new MatOfPoint2f()
-    obj.fromList(pta)
+    val srcPoints = matFromList(pta)
+    val dstPoints = matFromList(ptb)
 
-    val scene = new MatOfPoint2f()
-    scene.fromList(ptb)
-
-    val xx = Calib3d.findHomography(obj, scene, Calib3d.LMEDS, 8)
-
-    //    val (ax, ay) = ((0.0, 0.0) /: mysample) { case ((xx, yy), (pa, pb)) =>
-    //      (xx + pb.x - pa.x, yy + pb.y - pa.y)
-    //    }
-    //    val N = mkp.descriptorMatches.size
-    //    // println(f"${ax / N}%7.2f ${ay / N}%7.2f")
-    //    (ax / N, ay / N)
-
-    //        pts = np.float32([ [0,0],[0,h-1],[w-1,h-1],[w-1,0] ]).reshape(-1,1,2)
-    //    dst = cv2.perspectiveTransform(pts,M)
-    //
-    //    img2 = cv2.polylines(img2,[np.int32(dst)],True,255,3, cv2.LINE_AA)
-
-    (xx.get(0, 2).head, xx.get(1, 2).head)
-
+    Calib3d.findHomography(srcPoints, dstPoints, Calib3d.LMEDS, 8.0)
   }
 
-  def drawTransform(img: Mat, mkp: MatchingKeypoints) = {
-    val (ax, ay) = estimateTransform(mkp)
+  def matFromList(listOfPoints: Seq[Point]) = {
+    val matOfPoints = new MatOfPoint2f()
+    matOfPoints.fromList(listOfPoints)
+    matOfPoints
+  }
+
+  def drawTranslation(img: Mat, mkp: MatchingKeypoints) = {
+    val xx = homographyFromMatches(mkp)
+    val ax = xx.get(0, 2).head
+    val ay = xx.get(1, 2).head
     Imgproc.line(img, new Point(50, 50), new Point(50 + ax, 50 + ay), new Scalar(0, 255, 5, 60), 5)
     img
   }

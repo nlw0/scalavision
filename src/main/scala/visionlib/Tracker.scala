@@ -1,7 +1,6 @@
 package visionlib
 
-import org.opencv.core.{Mat, Scalar}
-import org.opencv.imgproc.Imgproc
+import org.opencv.core.Mat
 
 
 object Tracker extends TestKeypointExtractor {
@@ -17,9 +16,8 @@ object Tracker extends TestKeypointExtractor {
 
       val mkp = matchKeypoints(imfta.kps, imftb.kps)
 
-      val (ax, ay) = estimateTransform(mkp)
       val im = drawTracks(imftb.image, mkp)
-      drawTransform(im, mkp)
+      drawTranslation(im, mkp)
 
   }
 
@@ -36,9 +34,8 @@ object Tracker extends TestKeypointExtractor {
   def track(imfta: ImageAndDescriptors, imftb: ImageAndDescriptors): Some[Mat] = {
     val mkp = matchKeypoints(imfta.kps, imftb.kps)
 
-    val (ax, ay) = estimateTransform(mkp)
     val im = drawTracks(imftb.image, mkp)
-    Some(drawTransform(im, mkp))
+    Some(drawTranslation(im, mkp))
   }
 
 }
