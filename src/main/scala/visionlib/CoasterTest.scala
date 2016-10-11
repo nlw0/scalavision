@@ -1,11 +1,11 @@
 package visionlib
 
 import org.opencv.calib3d.Calib3d
-import org.opencv.core.{Core, Mat, Scalar}
+import org.opencv.core.{Core, CvType, Mat}
 
 object CoasterTest extends VisionApp with TestKeypointExtractor {
 
-  val INPUT_SIZE = 400
+  val INPUT_SIZE = 600
 
   val ima #:: ii = imagePairs
   // .take(5)
@@ -44,70 +44,57 @@ object CoasterTest extends VisionApp with TestKeypointExtractor {
     saveToFile(filenameTrans(nn))(concatenateImagesVertical(outImg, outImgTrans))
   }
 
+  val pta = matches.head._1._2.descriptorMatches filter { aa => pointsSeenEverywhere contains aa.queryIdx } map {
+    aa => matches.head._1._2.kpa.toArray.apply(aa.queryIdx).pt
+  }
 
-  for {((imb, bmkp), nn) <- matches} {
+  val imagesWithPointsHead = List((ima, pta))
 
-    val pta = bmkp.descriptorMatches filter { aa => pointsSeenEverywhere contains aa.queryIdx } map { aa =>
-      bmkp.kpa.toArray.apply(aa.queryIdx).pt
-    }
+  val coisa = for {((imb, bmkp), nn) <- matches} yield {
     val ptb = bmkp.descriptorMatches filter { aa => pointsSeenEverywhere contains aa.queryIdx } map { aa =>
       bmkp.kpb.toArray.apply(aa.trainIdx).pt
     }
-
-    val srcPoints = matFromList(pta)
-    val dstPoints = matFromList(ptb)
-
-    val H = Calib3d.findHomography(srcPoints, dstPoints, Calib3d.LMEDS, 8.0)
-    val Hi = Calib3d.findHomography(dstPoints, srcPoints, Calib3d.LMEDS, 8.0)
-    val g = Hi.inv
-    val gg = g.get(2,2)(0)
-    val ggg = new Mat()
-    Core.divide(g, Scalar.all(gg), ggg)
-
-    val j = H.inv
-    val jj = j.get(2,2)(0)
-    val jjj = new Mat()
-    Core.divide(j, Scalar.all(jj), jjj)
-
-    println(H.dump)
-    println(ggg.dump)
-    println(Hi.dump)
-    println(jjj.dump)
-    println()
+    (imb, ptb)
   }
 
-  for {((imb, bmkp), nn) <- matches
-       ((imc, cmkp), mm) <- matches
-       if nn < mm} {
+  val imagesWithPoints = imagesWithPointsHead ++ coisa
 
-    val pta = bmkp.descriptorMatches filter { aa => pointsSeenEverywhere contains aa.queryIdx } map { aa =>
-      bmkp.kpa.toArray.apply(aa.trainIdx).pt
-    }
-    val ptb = cmkp.descriptorMatches filter { aa => pointsSeenEverywhere contains aa.queryIdx } map { aa =>
-      cmkp.kpb.toArray.apply(aa.trainIdx).pt
-    }
+  for {List((ima, pta), (imb, ptb)) <- imagesWithPoints.combinations(2)} {
 
     val srcPoints = matFromList(pta)
     val dstPoints = matFromList(ptb)
 
-    val H = Calib3d.findHomography(srcPoints, dstPoints, Calib3d.LMEDS, 8.0)
-    val Hi = Calib3d.findHomography(dstPoints, srcPoints, Calib3d.LMEDS, 8.0)
+    for {ss <- List(srcPoints, dstPoints)
+         n <- 0 until ss.rows
+    } {
+      val t = Array[Float](0, 0)
 
-    val g = Hi.inv
-    val gg = g.get(2,2)(0)
-    val ggg = new Mat()
-    Core.divide(g, Scalar.all(gg), ggg)
+      ss.get(n, 0, t)
+      t(0) = (t(0) - 400.0f) / 200.0f
+      t(1) = (t(1) - 300.0f) / 200.0f
+      ss.put(n, 0, t)
+    }
 
-    val j = H.inv
-    val jj = j.get(2,2)(0)
-    val jjj = new Mat()
-    Core.divide(j, Scalar.all(jj), jjj)
+    println(srcPoints.dump)
+    println(dstPoints.dump)
 
-    println(H.dump)
-    println(ggg.dump)
-    println(Hi.dump)
-    println(jjj.dump)
-    println()
+    val H = Calib3d.findHomography(srcPoints, dstPoints, 0, 8.0)
+    val mm = Mat.ones(srcPoints.rows, 3, CvType.CV_32F)
+
+    for (i <- 0 until 12) {
+      val t = Array[Float](0, 0)
+      srcPoints.get(i, 0, t)
+      mm.put(i, 0, t)
+    }
+
+    val out = new Mat(12, 3, CvType.CV_32F)
+
+    val hhh = new Mat()
+    H.convertTo(hhh, CvType.CV_32F)
+
+    Core.gemm(mm, hhh.t, 1, new Mat(), 0, out)
+
+    println(out.dump)
   }
 
   def imagePairs = resourcesFromDirectory("/coaster").toStream map openResource
