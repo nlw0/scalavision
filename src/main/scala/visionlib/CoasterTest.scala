@@ -79,8 +79,16 @@ object CoasterTest extends VisionApp with TestKeypointExtractor {
     println(dstPoints.dump)
 
     val H = Calib3d.findHomography(srcPoints, dstPoints, 0, 8.0)
-    val mm = Mat.ones(srcPoints.rows, 3, CvType.CV_32F)
+    val Hi = Calib3d.findHomography(dstPoints, srcPoints, 0, 8.0)
+    val HHi = new Mat()
 
+    Core.gemm(H, Hi, 1, new Mat(), 0, HHi)
+
+    println(H.dump)
+    println(Hi.inv.dump)
+    println(HHi.dump)
+
+    val mm = Mat.ones(srcPoints.rows, 3, CvType.CV_32F)
     for (i <- 0 until 12) {
       val t = Array[Float](0, 0)
       srcPoints.get(i, 0, t)
@@ -95,6 +103,7 @@ object CoasterTest extends VisionApp with TestKeypointExtractor {
     Core.gemm(mm, hhh.t, 1, new Mat(), 0, out)
 
     println(out.dump)
+    println()
   }
 
   def imagePairs = resourcesFromDirectory("/coaster").toStream map openResource
