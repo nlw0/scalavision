@@ -7,7 +7,7 @@ object CoasterTestPairs extends VisionApp with TestKeypointExtractor {
 
   val INPUT_SIZE = 600
 
-  val matches = for (Stream((ima, mm), (imb, nn)) <- imagePairs.zipWithIndex.combinations(2)) yield {
+  val matches = for (Stream((ima, mm), (imb, nn)) <- imagePairs.take(5).zipWithIndex.combinations(2)) yield {
 
     val kda = kpext.detectAndDescribe(ima)
     val kdb = kpext.detectAndDescribe(imb)
@@ -33,7 +33,7 @@ object CoasterTestPairs extends VisionApp with TestKeypointExtractor {
 
     val MatchingKeypoints(pta, ptb, _) = mkp
 
-    val lpta = mkp.descriptorMatches map { aa => ptb.toArray.apply(aa.queryIdx).pt }
+    val lpta = mkp.descriptorMatches map { aa => pta.toArray.apply(aa.queryIdx).pt }
     val lptb = mkp.descriptorMatches map { aa => ptb.toArray.apply(aa.trainIdx).pt }
 
     val srcPoints = matFromList(lpta)
@@ -50,21 +50,18 @@ object CoasterTestPairs extends VisionApp with TestKeypointExtractor {
       ss.put(n, 0, t)
     }
 
-    println(srcPoints.dump)
-    println(dstPoints.dump)
-
-    val H = Calib3d.findHomography(srcPoints, dstPoints, 0, 8.0)
-    val Hi = Calib3d.findHomography(dstPoints, srcPoints, 0, 8.0)
+    val H = Calib3d.findHomography(srcPoints, dstPoints, 0, 0.1)
+    val Hi = Calib3d.findHomography(dstPoints, srcPoints, 0, 0.1)
     val HHi = new Mat()
 
     Core.gemm(H, Hi, 1, new Mat(), 0, HHi)
 
     println(H.dump)
-    println(Hi.inv.dump)
+    println(Hi.dump)
     println(HHi.dump)
 
     val mm = Mat.ones(srcPoints.rows, 3, CvType.CV_32F)
-    for (i <- 0 until 12) {
+    for (i <- 0 until srcPoints.rows) {
       val t = Array[Float](0, 0)
       srcPoints.get(i, 0, t)
       mm.put(i, 0, t)
@@ -77,7 +74,19 @@ object CoasterTestPairs extends VisionApp with TestKeypointExtractor {
 
     Core.gemm(mm, hhh.t, 1, new Mat(), 0, out)
 
-    println(out.dump)
+    for (i <- 0 until srcPoints.rows) {
+      val t0 = Array[Float](0)
+      val t1 = Array[Float](0)
+      val t2 = Array[Float](0)
+      val d = Array[Float](0,0)
+      out.get(i, 0, t0)
+      out.get(i, 1, t1)
+      out.get(i, 2, t2)
+      dstPoints.get(i, 0, d)
+
+      println(s"${d(0)} ${t0(0)/t2(0)} ${d(0) - t0(0)/t2(0)} ${d(1)} ${t1(0)/t2(0)} ${d(1) - t1(0)/t2(0)}")
+    }
+
     println()
   }
 
