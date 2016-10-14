@@ -50,8 +50,8 @@ object CoasterTestPairs extends VisionApp with TestKeypointExtractor {
       ss.put(n, 0, t)
     }
 
-    val H = Calib3d.findHomography(srcPoints, dstPoints, 0, 0.1)
-    val Hi = Calib3d.findHomography(dstPoints, srcPoints, 0, 0.1)
+    val H = Calib3d.findHomography(srcPoints, dstPoints, Calib3d.LMEDS, 8)
+    val Hi = Calib3d.findHomography(dstPoints, srcPoints, Calib3d.LMEDS, 8)
     val HHi = new Mat()
 
     Core.gemm(H, Hi, 1, new Mat(), 0, HHi)
