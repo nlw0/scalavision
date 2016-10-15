@@ -1,21 +1,30 @@
 package visionlib
 
 import org.opencv.calib3d.Calib3d
-import org.opencv.core.{Core, CvType, Mat, MatOfPoint2f}
+import org.opencv.core.{CvType, Mat, MatOfPoint2f}
 
 object CoasterTestPairs extends VisionApp with TestKeypointExtractor {
 
   val INPUT_SIZE = 600
 
-  val matches = for (Stream((ima, mm), (imb, nn)) <- imagePairs.take(5).zipWithIndex.combinations(2)) yield {
+  val nImages = 5
 
-    val kda = kpext.detectAndDescribe(ima)
-    val kdb = kpext.detectAndDescribe(imb)
+  val myImages = allImages.take(nImages).toVector
+
+  val descriptors = myImages map { im => kpext.detectAndDescribe(im) }
+
+  val matches = (for (Seq(mm, nn) <- (0 to 4).combinations(2)) yield {
+
+    val ima = myImages(mm)
+    val imb = myImages(nn)
+
+    val kda = descriptors(mm)
+    val kdb = descriptors(nn)
 
     val mkp = matchKeypoints(kda, kdb)
 
-    ((ima, mm), (imb, nn), mkp)
-  }
+    (mm, nn) -> mkp
+  }).toMap
 
   //  for (((ima, mm), (imb, nn), mkp) <- matches) {
   //
@@ -29,88 +38,28 @@ object CoasterTestPairs extends VisionApp with TestKeypointExtractor {
   //    saveToFile(filenameTrans(mm*100+nn))(concatenateImagesVertical(outImg, outImgTrans))
   //  }
 
-  for (((ima, mm), (imb, nn), mkp) <- matches) {
+  val allHomos = Mat.eye(3 * nImages, 3 * nImages, CvType.CV_32F)
+
+  for {m <- 0 until nImages
+       n <- 0 until nImages
+       if m != n} {
+
+    val mkp = if (m < n) matches((m, n)) else matches((n, m))
 
     val MatchingKeypoints(pta, ptb, _) = mkp
 
     val lpta = mkp.descriptorMatches map { aa => pta.toArray.apply(aa.queryIdx).pt }
     val lptb = mkp.descriptorMatches map { aa => ptb.toArray.apply(aa.trainIdx).pt }
 
-    val srcPoints = matFromList(lpta)
-    val dstPoints = matFromList(lptb)
-
-    for {ss <- List(srcPoints, dstPoints)
-         n <- 0 until ss.rows
-    } {
-      val t = Array[Float](0, 0)
-
-      ss.get(n, 0, t)
-      t(0) = (t(0) - 400.0f) / 200.0f
-      t(1) = (t(1) - 300.0f) / 200.0f
-      ss.put(n, 0, t)
-    }
+    val srcPoints = matFromListNormalized(lpta)
+    val dstPoints = matFromListNormalized(lptb)
 
     val H = Calib3d.findHomography(srcPoints, dstPoints, Calib3d.LMEDS, 8)
-    val Hi = Calib3d.findHomography(dstPoints, srcPoints, Calib3d.LMEDS, 8)
-    val HHi = new Mat()
-
-    Core.gemm(H, Hi, 1, new Mat(), 0, HHi)
 
     println(H.dump)
-    println(Hi.dump)
-    println(HHi.dump)
-
-    val mm = homoMatFromWeird(srcPoints)
-    val nn = homoMatFromWeird(dstPoints)
-
-    val out = new Mat()
-    val hhh = new Mat()
-    val hhhi = new Mat()
-
-    H.convertTo(hhh, CvType.CV_32F)
-    Hi.convertTo(hhhi, CvType.CV_32F)
-
-    Core.gemm(mm, hhh.t, 1, new Mat(), 0, out)
-    Core.gemm(nn, hhhi.t, 1, new Mat(), 0, out)
-
-    for (i <- 0 until srcPoints.rows) {
-      val t0 = Array[Float](0)
-      val t1 = Array[Float](0)
-      val t2 = Array[Float](0)
-      out.get(i, 0, t0)
-      out.get(i, 1, t1)
-      out.get(i, 2, t2)
-      val u = t0(0) / t2(0)
-      val v = t1(0) / t2(0)
-
-      val d = Array[Float](0, 0)
-      dstPoints.get(i, 0, d)
-
-      println(s"${d(0)} ${u} ${d(0) - u} ${d(1)} ${v} ${d(1) - v}")
-    }
-
-    println("====")
-
-    for (i <- 0 until dstPoints.rows) {
-      val t0 = Array[Float](0)
-      val t1 = Array[Float](0)
-      val t2 = Array[Float](0)
-      out.get(i, 0, t0)
-      out.get(i, 1, t1)
-      out.get(i, 2, t2)
-      val u = t0(0) / t2(0)
-      val v = t1(0) / t2(0)
-
-      val d = Array[Float](0, 0)
-      srcPoints.get(i, 0, d)
-
-      println(s"${d(0)} ${u} ${d(0) - u} ${d(1)} ${v} ${d(1) - v}")
-    }
-
-    println()
   }
 
-  def imagePairs = resourcesFromDirectory("/coaster").toStream map openResource
+  def allImages = resourcesFromDirectory("/coaster").toStream map openResource
 
   def openResource = getFilenameFromResource _ andThen
                      loadImage andThen
@@ -127,3 +76,56 @@ object CoasterTestPairs extends VisionApp with TestKeypointExtractor {
   }
 
 }
+
+
+
+//
+//    println(H.dump)
+//
+//    val mm = homoMatFromWeird(srcPoints)
+//    val nn = homoMatFromWeird(dstPoints)
+//
+//    val out = new Mat()
+//    val hhh = new Mat()
+//    val hhhi = new Mat()
+//
+//    H.convertTo(hhh, CvType.CV_32F)
+//    Hi.convertTo(hhhi, CvType.CV_32F)
+//
+//    Core.gemm(mm, hhh.t, 1, new Mat(), 0, out)
+//    Core.gemm(nn, hhhi.t, 1, new Mat(), 0, out)
+//
+//    for (i <- 0 until srcPoints.rows) {
+//      val t0 = Array[Float](0)
+//      val t1 = Array[Float](0)
+//      val t2 = Array[Float](0)
+//      out.get(i, 0, t0)
+//      out.get(i, 1, t1)
+//      out.get(i, 2, t2)
+//      val u = t0(0) / t2(0)
+//      val v = t1(0) / t2(0)
+//
+//      val d = Array[Float](0, 0)
+//      dstPoints.get(i, 0, d)
+//
+//      println(s"${d(0)} ${u} ${d(0) - u} ${d(1)} ${v} ${d(1) - v}")
+
+
+//
+//
+//println("====")
+//
+//for (i <- 0 until dstPoints.rows) {
+//val t0 = Array[Float](0)
+//val t1 = Array[Float](0)
+//val t2 = Array[Float](0)
+//out.get(i, 0, t0)
+//out.get(i, 1, t1)
+//out.get(i, 2, t2)
+//val u = t0(0) / t2(0)
+//val v = t1(0) / t2(0)
+//
+//val d = Array[Float](0, 0)
+//srcPoints.get(i, 0, d)
+//
+//println(s"${d(0)} ${u} ${d(0) - u} ${d(1)} ${v} ${d(1) - v}")

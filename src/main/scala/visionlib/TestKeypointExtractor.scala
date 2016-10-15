@@ -121,6 +121,20 @@ trait TestKeypointExtractor extends UtilityFunctions {
     matOfPoints
   }
 
+  def matFromListNormalized(listOfPoints: Seq[Point]) = {
+    val ss = matFromList(listOfPoints)
+
+    for {n <- 0 until ss.rows} {
+      val t = Array[Float](0, 0)
+
+      ss.get(n, 0, t)
+      t(0) = (t(0) - 400.0f) / 200.0f
+      t(1) = (t(1) - 300.0f) / 200.0f
+      ss.put(n, 0, t)
+    }
+    ss
+  }
+
   def drawTranslation(img: Mat, mkp: MatchingKeypoints) = {
     val xx = homographyFromMatches(mkp)
     val ax = xx.get(0, 2).head
