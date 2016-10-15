@@ -1,7 +1,7 @@
 package visionlib
 
 import org.opencv.calib3d.Calib3d
-import org.opencv.core.{Core, CvType, Mat}
+import org.opencv.core.{Core, CvType, Mat, MatOfPoint2f}
 
 object CoasterTestPairs extends VisionApp with TestKeypointExtractor {
 
@@ -17,17 +17,17 @@ object CoasterTestPairs extends VisionApp with TestKeypointExtractor {
     ((ima, mm), (imb, nn), mkp)
   }
 
-//  for (((ima, mm), (imb, nn), mkp) <- matches) {
-//
-//    val MatchingKeypoints(aa, bb, dd) = mkp
-//
-//    val outImg = drawTracksBoth(ima, imb, mkp)
-//    val outImgTrans = drawTransformsBoth(ima, imb, mkp)
-//
-//    def filenameTrans = { num: Int => f"/home/nlw/coisatrans-$num%04d.png" }
-//
-//    saveToFile(filenameTrans(mm*100+nn))(concatenateImagesVertical(outImg, outImgTrans))
-//  }
+  //  for (((ima, mm), (imb, nn), mkp) <- matches) {
+  //
+  //    val MatchingKeypoints(aa, bb, dd) = mkp
+  //
+  //    val outImg = drawTracksBoth(ima, imb, mkp)
+  //    val outImgTrans = drawTransformsBoth(ima, imb, mkp)
+  //
+  //    def filenameTrans = { num: Int => f"/home/nlw/coisatrans-$num%04d.png" }
+  //
+  //    saveToFile(filenameTrans(mm*100+nn))(concatenateImagesVertical(outImg, outImgTrans))
+  //  }
 
   for (((ima, mm), (imb, nn), mkp) <- matches) {
 
@@ -60,31 +60,51 @@ object CoasterTestPairs extends VisionApp with TestKeypointExtractor {
     println(Hi.dump)
     println(HHi.dump)
 
-    val mm = Mat.ones(srcPoints.rows, 3, CvType.CV_32F)
-    for (i <- 0 until srcPoints.rows) {
-      val t = Array[Float](0, 0)
-      srcPoints.get(i, 0, t)
-      mm.put(i, 0, t)
-    }
+    val mm = homoMatFromWeird(srcPoints)
+    val nn = homoMatFromWeird(dstPoints)
 
-    val out = new Mat(12, 3, CvType.CV_32F)
-
+    val out = new Mat()
     val hhh = new Mat()
+    val hhhi = new Mat()
+
     H.convertTo(hhh, CvType.CV_32F)
+    Hi.convertTo(hhhi, CvType.CV_32F)
 
     Core.gemm(mm, hhh.t, 1, new Mat(), 0, out)
+    Core.gemm(nn, hhhi.t, 1, new Mat(), 0, out)
 
     for (i <- 0 until srcPoints.rows) {
       val t0 = Array[Float](0)
       val t1 = Array[Float](0)
       val t2 = Array[Float](0)
-      val d = Array[Float](0,0)
       out.get(i, 0, t0)
       out.get(i, 1, t1)
       out.get(i, 2, t2)
+      val u = t0(0) / t2(0)
+      val v = t1(0) / t2(0)
+
+      val d = Array[Float](0, 0)
       dstPoints.get(i, 0, d)
 
-      println(s"${d(0)} ${t0(0)/t2(0)} ${d(0) - t0(0)/t2(0)} ${d(1)} ${t1(0)/t2(0)} ${d(1) - t1(0)/t2(0)}")
+      println(s"${d(0)} ${u} ${d(0) - u} ${d(1)} ${v} ${d(1) - v}")
+    }
+
+    println("====")
+
+    for (i <- 0 until dstPoints.rows) {
+      val t0 = Array[Float](0)
+      val t1 = Array[Float](0)
+      val t2 = Array[Float](0)
+      out.get(i, 0, t0)
+      out.get(i, 1, t1)
+      out.get(i, 2, t2)
+      val u = t0(0) / t2(0)
+      val v = t1(0) / t2(0)
+
+      val d = Array[Float](0, 0)
+      srcPoints.get(i, 0, d)
+
+      println(s"${d(0)} ${u} ${d(0) - u} ${d(1)} ${v} ${d(1) - v}")
     }
 
     println()
@@ -95,4 +115,15 @@ object CoasterTestPairs extends VisionApp with TestKeypointExtractor {
   def openResource = getFilenameFromResource _ andThen
                      loadImage andThen
                      scaleImageHeight(INPUT_SIZE)
+
+  def homoMatFromWeird(srcPoints: MatOfPoint2f) = {
+    val mm = Mat.ones(srcPoints.rows, 3, CvType.CV_32F)
+    for (i <- 0 until srcPoints.rows) {
+      val t = Array[Float](0, 0)
+      srcPoints.get(i, 0, t)
+      mm.put(i, 0, t)
+    }
+    mm
+  }
+
 }
