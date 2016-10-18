@@ -2,7 +2,6 @@ package visionlib
 
 import java.util
 
-import org.opencv.calib3d.Calib3d
 import org.opencv.core._
 import org.opencv.features2d.{DescriptorExtractor, DescriptorMatcher, FeatureDetector}
 import org.opencv.imgproc.Imgproc
@@ -33,8 +32,8 @@ trait TestKeypointExtractor extends UtilityFunctions {
     val descriptorMatches = new util.ArrayList[MatOfDMatch]()
     matcher.knnMatch(kda.desc, kdb.desc, descriptorMatches, 2)
 
-    val xx = for {Array(ma, mb) <- descriptorMatches map (_.toArray)
-                  if ma.distance < MAGIC_LOWE_THRESHOLD * mb.distance} yield ma
+    val xx = (for {Array(ma, mb) <- descriptorMatches map (_.toArray)
+                   if ma.distance < MAGIC_LOWE_THRESHOLD * mb.distance} yield ma).toList
 
     MatchingKeypoints(kda.kp, kdb.kp, xx)
   }
@@ -61,7 +60,7 @@ trait TestKeypointExtractor extends UtilityFunctions {
 
   def drawTransformsBoth(ima: Mat, imb: Mat, mkp: MatchingKeypoints): Mat = {
 
-    val H = homographyFromMatches(mkp)
+    val H = mkp.homography
 
     val imat = new Mat()
     val imbt = new Mat()
@@ -105,38 +104,8 @@ trait TestKeypointExtractor extends UtilityFunctions {
   def randomSample[A](x: Iterable[A], n: Int) =
     scala.util.Random.shuffle(x) take n
 
-  def homographyFromMatches(mkp: MatchingKeypoints) = {
-    val pta = mkp.descriptorMatches map { aa => mkp.kpa.toArray.apply(aa.queryIdx).pt }
-    val ptb = mkp.descriptorMatches map { aa => mkp.kpb.toArray.apply(aa.trainIdx).pt }
-
-    val srcPoints = matFromList(pta)
-    val dstPoints = matFromList(ptb)
-
-    Calib3d.findHomography(srcPoints, dstPoints, Calib3d.LMEDS, 8.0)
-  }
-
-  def matFromList(listOfPoints: Seq[Point]) = {
-    val matOfPoints = new MatOfPoint2f()
-    matOfPoints.fromList(listOfPoints)
-    matOfPoints
-  }
-
-  def matFromListNormalized(listOfPoints: Seq[Point]) = {
-    val ss = matFromList(listOfPoints)
-
-    for {n <- 0 until ss.rows} {
-      val t = Array[Float](0, 0)
-
-      ss.get(n, 0, t)
-      t(0) = (t(0) - 400.0f) / 200.0f
-      t(1) = (t(1) - 300.0f) / 200.0f
-      ss.put(n, 0, t)
-    }
-    ss
-  }
-
   def drawTranslation(img: Mat, mkp: MatchingKeypoints) = {
-    val xx = homographyFromMatches(mkp)
+    val xx = mkp.homography
     val ax = xx.get(0, 2).head
     val ay = xx.get(1, 2).head
     Imgproc.line(img, new Point(50, 50), new Point(50 + ax, 50 + ay), new Scalar(0, 255, 5, 60), 5)

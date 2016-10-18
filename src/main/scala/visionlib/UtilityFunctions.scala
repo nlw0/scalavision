@@ -88,8 +88,8 @@ trait UtilityFunctions {
   def loadImageGrayscale(fileName: String): Mat =
     Imgcodecs.imread(fileName, Imgcodecs.IMREAD_GRAYSCALE)
 
-  def getFilenameFromResource(resource: String): String =
-    getClass.getResource(resource).getPath
+  def getFilenameFromResource(resource: String): Option[String] =
+    Some(getClass.getResource(resource).getPath)
 
 }
 

@@ -1,8 +1,5 @@
 package visionlib
 
-import org.opencv.calib3d.Calib3d
-import org.opencv.core.{Core, CvType, Mat}
-
 object CoasterTest extends VisionApp with TestKeypointExtractor {
 
   val INPUT_SIZE = 600
@@ -61,6 +58,7 @@ object CoasterTest extends VisionApp with TestKeypointExtractor {
 
   for {List((ima, pta), (imb, ptb)) <- imagesWithPoints.combinations(2)} {
 
+    /*
     val srcPoints = matFromList(pta)
     val dstPoints = matFromList(ptb)
 
@@ -104,6 +102,7 @@ object CoasterTest extends VisionApp with TestKeypointExtractor {
 
     println(out.dump)
     println()
+*/
   }
 
   def imagePairs = resourcesFromDirectory("/coaster").toStream map openResource
