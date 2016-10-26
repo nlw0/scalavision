@@ -1,11 +1,10 @@
 package visionlib
 
-object CoasterTest extends VisionApp with TestKeypointExtractor {
+object CoasterTest extends VisionApp with TestKeypointExtractor with CoasterData {
 
   val INPUT_SIZE = 600
 
-  val ima #:: ii = imagePairs
-  // .take(5)
+  val ima #:: ii = allImages.flatten.take(5)
   val kda = kpext.detectAndDescribe(ima)
 
   val matches = for ((imb, nn) <- ii.zipWithIndex) yield {
@@ -16,7 +15,6 @@ object CoasterTest extends VisionApp with TestKeypointExtractor {
 
     ((imb, mkp), nn)
   }
-
 
   val pointsSeenEverywhere = matches map { case ((_, mkp), _) =>
     mkp.descriptorMatches.map(_.queryIdx).toSet
@@ -105,9 +103,5 @@ object CoasterTest extends VisionApp with TestKeypointExtractor {
 */
   }
 
-  def imagePairs = resourcesFromDirectory("/coaster").toStream map openResource
-
-  def openResource = getFilenameFromResource _ andThen
-                     loadImage andThen
-                     scaleImageHeight(INPUT_SIZE)
 }
+

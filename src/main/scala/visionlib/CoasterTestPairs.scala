@@ -2,13 +2,11 @@ package visionlib
 
 import org.opencv.core.{CvType, Mat}
 
-object CoasterTestPairs extends VisionApp with TestKeypointExtractor {
-
-  val INPUT_SIZE = 600
+object CoasterTestPairs extends VisionApp with TestKeypointExtractor with CoasterData {
 
   val nImages = 5
 
-  val myImages = allImages.take(nImages).toVector
+  val myImages = allImages.flatten.take(nImages).toVector
 
   val descriptors = myImages map { im => kpext.detectAndDescribe(im) }
 
@@ -37,10 +35,4 @@ object CoasterTestPairs extends VisionApp with TestKeypointExtractor {
   }
 
   println(allHomos.dump)
-
-  def allImages = resourcesFromDirectory("/coaster").toStream map openResource
-
-  def openResource(res: String) = getFilenameFromResource(res) map
-                                  loadImage map
-                                  scaleImageHeight(INPUT_SIZE)
 }

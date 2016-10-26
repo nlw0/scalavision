@@ -5,8 +5,8 @@ import org.opencv.core.{DMatch, MatOfKeyPoint, MatOfPoint2f, Point}
 
 case class MatchingKeypoints(kpa: MatOfKeyPoint, kpb: MatOfKeyPoint, descriptorMatches: Seq[DMatch]) {
   def homography = {
-    val lpta = descriptorMatches map { aa => kpa.toArray.apply(aa.queryIdx).pt } map transformPoint
-    val lptb = descriptorMatches map { aa => kpb.toArray.apply(aa.trainIdx).pt } map transformPoint
+    val lpta = descriptorMatches map { aa => kpa.toArray.apply(aa.queryIdx).pt } // map transformPoint
+    val lptb = descriptorMatches map { aa => kpb.toArray.apply(aa.trainIdx).pt } // map transformPoint
     val srcPoints = getMatOfPoints(lpta)
     val dstPoints = getMatOfPoints(lptb)
 

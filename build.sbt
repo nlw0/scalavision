@@ -4,6 +4,12 @@ version := "1.0"
 
 scalaVersion := "2.11.8"
 
+
+libraryDependencies ++= List(
+  "org.scalanlp" % "breeze_2.11" % "0.12")
+
+resolvers += "Sonatype Releases" at "https://oss.sonatype.org/content/repositories/releases/"
+
 //val akkaVersion = "2.4.10"
 
 //resolvers ++= Seq(
