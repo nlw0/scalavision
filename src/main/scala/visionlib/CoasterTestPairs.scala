@@ -1,5 +1,6 @@
 package visionlib
 
+import breeze.linalg._
 import org.opencv.core.{CvType, Mat}
 
 object CoasterTestPairs extends VisionApp with TestKeypointExtractor with CoasterData {
@@ -20,6 +21,8 @@ object CoasterTestPairs extends VisionApp with TestKeypointExtractor with Coaste
 
   val allHomos = Mat.eye(3 * nImages, 3 * nImages, CvType.CV_64F)
 
+  val allHomosB = DenseMatrix.eye[Double](3 * nImages)
+
   for {m <- 0 until nImages
        n <- 0 until nImages
        if m != n} {
@@ -32,6 +35,14 @@ object CoasterTestPairs extends VisionApp with TestKeypointExtractor with Coaste
 
     val subMat = allHomos.colRange(n * 3, n * 3 + 3).rowRange(m * 3, m * 3 + 3)
     H.copyTo(subMat)
+
+    val hh = Array.fill[Double](9)(0.0)
+    H.get(0, 0, hh)
+    val coisa = new DenseMatrix(3, 3, hh)
+    println(H)
+    println(coisa)
+    println()
+
   }
 
   println(allHomos.dump)
