@@ -4,7 +4,7 @@ object CoasterTest extends VisionApp with TestKeypointExtractor with CoasterData
 
   val INPUT_SIZE = 600
 
-  val ima #:: ii = allImages.flatten.take(5)
+  val ima #:: ii = allImages.take(5).flatten
   val kda = kpext.detectAndDescribe(ima)
 
   val matches = for ((imb, nn) <- ii.zipWithIndex) yield {
@@ -35,12 +35,17 @@ object CoasterTest extends VisionApp with TestKeypointExtractor with CoasterData
 
     def filenameTrans = { num: Int => f"/home/nlw/coisatrans-$num%02d.png" }
 
-    // saveToFile(filename(nn))(outImg)
+    saveToFile(filename(nn))(outImg)
     saveToFile(filenameTrans(nn))(concatenateImagesVertical(outImg, outImgTrans))
   }
 
-  val pta = matches.head._1._2.descriptorMatches filter { aa => pointsSeenEverywhere contains aa.queryIdx } map {
-    aa => matches.head._1._2.kpa.toArray.apply(aa.queryIdx).pt
+  private val amkp = matches.head._1._2
+
+  val pta = for {
+    aa <- amkp.descriptorMatches map (_.queryIdx)
+    if pointsSeenEverywhere contains aa
+  } yield {
+    amkp.kpa.toArray.apply(aa).pt
   }
 
   val imagesWithPointsHead = List((ima, pta))

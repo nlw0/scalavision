@@ -60,7 +60,7 @@ trait TestKeypointExtractor extends UtilityFunctions {
 
   def drawTransformsBoth(ima: Mat, imb: Mat, mkp: MatchingKeypoints): Mat = {
 
-    val H = mkp.homography
+    val H = mkp.homographyMat
 
     val imat = new Mat()
     val imbt = new Mat()
@@ -105,7 +105,7 @@ trait TestKeypointExtractor extends UtilityFunctions {
     scala.util.Random.shuffle(x) take n
 
   def drawTranslation(img: Mat, mkp: MatchingKeypoints) = {
-    val xx = mkp.homography
+    val xx = mkp.homographyMat
     val ax = xx.get(0, 2).head
     val ay = xx.get(1, 2).head
     Imgproc.line(img, new Point(50, 50), new Point(50 + ax, 50 + ay), new Scalar(0, 255, 5, 60), 5)
