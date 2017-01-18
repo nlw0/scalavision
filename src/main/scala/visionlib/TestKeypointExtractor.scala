@@ -2,7 +2,7 @@ package visionlib
 
 import java.util
 
-import org.opencv.core._
+import org.opencv.core.{Point, _}
 import org.opencv.features2d.{DescriptorExtractor, DescriptorMatcher, FeatureDetector}
 import org.opencv.imgproc.Imgproc
 
@@ -36,6 +36,28 @@ trait TestKeypointExtractor extends UtilityFunctions {
                    if ma.distance < MAGIC_LOWE_THRESHOLD * mb.distance} yield ma).toList
 
     MatchingKeypoints(kda.kp, kdb.kp, xx)
+  }
+
+  def drawTracksBothOut(ima: Mat, imb: Mat, mkp: MatchingKeypoints, outl: Seq[Boolean]): Mat = {
+    val imgATrack = new Mat()
+    ima.copyTo(imgATrack)
+    val imgBTrack = new Mat()
+    imb.copyTo(imgBTrack)
+
+    def linecolor(x: Boolean) = if (x) new Scalar(205, 255, 5, 0) else new Scalar(5, 180, 205, 0)
+
+    for ((aa, oo) <- mkp.descriptorMatches zip outl) {
+      val pa = mkp.kpa.toArray.apply(aa.queryIdx).pt
+      val pb = mkp.kpb.toArray.apply(aa.trainIdx).pt
+      Imgproc.line(imgATrack, pa, pb, linecolor(oo))
+      Imgproc.line(imgBTrack, pa, pb, linecolor(oo))
+      Imgproc.circle(imgATrack, pb, 4, new Scalar(125, 125, 5, 60))
+      Imgproc.circle(imgBTrack, pa, 4, new Scalar(125, 125, 5, 60))
+      Imgproc.circle(imgATrack, pa, 4, new Scalar(0, 0, 255))
+      Imgproc.circle(imgBTrack, pb, 4, new Scalar(0, 0, 255))
+    }
+
+    concatenateImages(imgATrack, imgBTrack)
   }
 
   def drawTracksBoth(ima: Mat, imb: Mat, mkp: MatchingKeypoints): Mat = {
@@ -106,8 +128,9 @@ trait TestKeypointExtractor extends UtilityFunctions {
 
   def drawTranslation(img: Mat, mkp: MatchingKeypoints) = {
     val xx = mkp.homographyMat
-    val ax = xx.get(0, 2).head
-    val ay = xx.get(1, 2).head
+    val ax = xx.get(0, 2).head * 150.0f
+    val ay = xx.get(1, 2).head * 150.0f
+    println(s"trans $ax $ay")
     Imgproc.line(img, new Point(50, 50), new Point(50 + ax, 50 + ay), new Scalar(0, 255, 5, 60), 5)
     img
   }

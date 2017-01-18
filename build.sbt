@@ -2,8 +2,7 @@ name := "scalavision"
 
 version := "1.0"
 
-scalaVersion := "2.11.8"
-
+scalaVersion := "2.12.1"
 
 libraryDependencies ++= List(
   "org.scalanlp" % "breeze_2.11" % "0.12")
@@ -24,4 +23,4 @@ resolvers += "Sonatype Releases" at "https://oss.sonatype.org/content/repositori
 //  "org.scalafx" %% "scalafx" % "8.0.92-R10"
 //)
 
-javaOptions in run += "-Djava.library.path=/usr/local/share/OpenCV/java"
+// javaOptions in run += "-Djava.library.path=/usr/local/share/OpenCV/java"

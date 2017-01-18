@@ -24,9 +24,18 @@ object MatchStatistics extends VisionApp with TestKeypointExtractor with Coaster
     val imb = myImages(nn)
     val mkp = matches((mm, nn))
 
-    val MatchingKeypoints(aa, bb, dd) = mkp
+    val (_, outl) = mkp.homographyOutliers
 
-    val outImg = drawTracksBoth(ima, imb, mkp)
+    val oo = for (r <- 0 until outl.rows) yield {
+      outl.get(r, 0)(0) == 1
+    }
+
+    for ((a, o) <- mkp.descriptorMatches zip oo) {
+      println(s"$mm ${a.queryIdx} $nn ${a.trainIdx} ${if (o) 1 else 0}")
+    }
+
+    //val outImg = drawTracksBoth(ima, imb, mkp)
+    val outImg = drawTracksBothOut(ima, imb, mkp, oo)
     val outImgTrans = drawTransformsBoth(ima, imb, mkp)
 
     def filename = { num: Int => f"/home/nlw/coisa-$num%02d.png" }

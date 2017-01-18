@@ -5,15 +5,22 @@ import org.opencv.calib3d.Calib3d
 import org.opencv.core._
 
 case class MatchingKeypoints(kpa: MatOfKeyPoint, kpb: MatOfKeyPoint, descriptorMatches: Seq[DMatch]) {
-  def homographyMat = {
-    val lpta = descriptorMatches map { aa => kpa.toArray.apply(aa.queryIdx).pt }
-    // map transformPoint
-    val lptb = descriptorMatches map { aa => kpb.toArray.apply(aa.trainIdx).pt }
-    // map transformPoint
-    val srcPoints = getMatOfPoints(lpta)
-    val dstPoints = getMatOfPoints(lptb)
+  def lpta = descriptorMatches map { aa => kpa.toArray.apply(aa.queryIdx).pt } map transformPoint
+  def lptb = descriptorMatches map { aa => kpb.toArray.apply(aa.trainIdx).pt } map transformPoint
+  def srcPoints = getMatOfPoints(lpta)
 
-    Calib3d.findHomography(srcPoints, dstPoints, Calib3d.LMEDS, 8)
+  def dstPoints = getMatOfPoints(lptb)
+
+  def homographyMat = {
+    println(srcPoints.dump)
+    println(dstPoints.dump)
+    Calib3d.findHomography(srcPoints, dstPoints, Calib3d.LMEDS, 8.0)
+  }
+
+  def homographyOutliers = {
+    val mask = new Mat()
+    val aa = Calib3d.findHomography(srcPoints, dstPoints, Calib3d.LMEDS, 2.0, mask, 1000, 0.99)
+    (mat2dToDMDouble(aa), mask)
   }
 
   def homography = mat2dToDMDouble(homographyMat)
@@ -25,7 +32,7 @@ case class MatchingKeypoints(kpa: MatOfKeyPoint, kpb: MatOfKeyPoint, descriptorM
   }
 
   def transformPoint(pp: Point): Point = {
-    new Point((pp.x - 400.0f) / 200.0f, (pp.y - 300.0f) / 200.0f)
+    new Point((pp.x - 320.0f) / 150.0f, (pp.y - 240.0f) / 150.0f)
   }
 
   def getMatOfPoints(listOfPoints: Seq[Point]) = {
@@ -33,5 +40,4 @@ case class MatchingKeypoints(kpa: MatOfKeyPoint, kpb: MatOfKeyPoint, descriptorM
     out.fromArray(listOfPoints: _*)
     out
   }
-
 }
